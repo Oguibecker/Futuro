@@ -1,0 +1,14 @@
+⚠️ Esta pasta representa a cena "SampleScene.unity".
+
+Infelizmente, cenas reais (.unity) não podem ser geradas diretamente fora do Unity Editor,
+mas tudo está pronto para você abrir o projeto e só arrastar os prefabs como descrito.
+
+Etapas:
+1. Crie uma nova cena chamada 'SampleScene'.
+2. Adicione os seguintes objetos à cena:
+   - Prefab 'Player' na posição (0, 1, 0)
+   - GameObject vazio 'GroundSpawner' com o script GroundSpawner e prefab 'GroundTile' atribuído
+   - Ajuste a câmera para (0, 5, -10) e rotação (20, 0, 0)
+3. Clique em Play!
+
+Boa sorte! :)
