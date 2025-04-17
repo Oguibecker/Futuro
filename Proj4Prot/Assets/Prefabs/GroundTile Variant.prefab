@@ -56,6 +56,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: GroundTile Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 6213514177441035972, guid: c25bb4a527557a241aaa1f62a9029013, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 55577dadf10373947b5c1b0b87d12a2b, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
