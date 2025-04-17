@@ -7,12 +7,15 @@ public class GroundSpawner : MonoBehaviour
 
     void Start()
     {
-        for (int i = 0; i < 5; i++) SpawnTile();
+        for (int i = 0; i < 5; i++)
+        {
+            SpawnTile();
+        }
     }
 
     public void SpawnTile()
     {
         GameObject temp = Instantiate(groundTilePrefab, nextSpawnPoint, Quaternion.identity);
-        nextSpawnPoint = temp.transform.GetChild(1).position;
+        nextSpawnPoint = temp.transform.Find("NextSpawnPoint").position;
     }
 }
