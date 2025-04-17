@@ -18,14 +18,14 @@ public class GroundTile : MonoBehaviour
         }
 
         // Espera mais alguns segundos antes de destruir
-        Destroy(gameObject, 4f); // Tempo total = 1s (invoke) + 4s = 5s
+        Destroy(gameObject, 100f); // Tempo total = 1s (invoke) + 4s = 5s
     }
 
     void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            Destroy(gameObject, 6f);
+            Destroy(gameObject,10f);
         }
     }
 
