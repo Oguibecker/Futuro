@@ -9,32 +9,29 @@ public class PlayerController : MonoBehaviour
     public CharacterController controller;
 
     private int currentLane = 1; // 0 = esquerda, 1 = centro, 2 = direita
-    private float verticalVelocity;
     private Vector3 moveDirection;
+    private float verticalVelocity;
+
+    private float originalSpeed;
+    private bool isSlowed = false;
+    private float slowDuration = 1f;
+    private float slowTimer = 0f;
 
     void Start()
     {
         if (controller == null)
             controller = GetComponent<CharacterController>();
+
+        originalSpeed = forwardSpeed;
     }
 
     void Update()
     {
-        // Movimento para frente
         moveDirection = Vector3.forward * forwardSpeed;
 
-        // Movimento lateral baseado na faixa
-        Vector3 targetPosition = transform.position;
-        targetPosition.x = (currentLane - 1) * laneDistance;
-
-        Vector3 difference = targetPosition - transform.position;
-        Vector3 lateralMove = new Vector3(difference.x * 10f, 0, 0);
-        moveDirection.x = lateralMove.x;
-
-        // Gravidade e pulo
         if (controller.isGrounded)
         {
-            verticalVelocity = -1f;
+            verticalVelocity = -0.5f;
             if (Input.GetKeyDown(KeyCode.Space))
                 verticalVelocity = jumpForce;
         }
@@ -43,21 +40,55 @@ public class PlayerController : MonoBehaviour
             verticalVelocity -= gravity * Time.deltaTime;
         }
 
-        moveDirection.y = verticalVelocity;
+        // Define posição-alvo com base na faixa atual
+        Vector3 targetPosition = transform.position.z * Vector3.forward;
+        if (currentLane == 0)
+            targetPosition += Vector3.left * laneDistance;
+        else if (currentLane == 2)
+            targetPosition += Vector3.right * laneDistance;
 
-        // Aplica movimento
-        controller.Move(moveDirection * Time.deltaTime);
+        Vector3 difference = targetPosition - transform.position;
+        Vector3 moveVector = new Vector3(difference.x * 10f, verticalVelocity, forwardSpeed);
+        controller.Move(moveVector * Time.deltaTime);
 
-        // Mudar de faixa
         if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
             MoveLane(false);
         if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
             MoveLane(true);
+
+        if (isSlowed)
+        {
+            slowTimer -= Time.deltaTime;
+            if (slowTimer <= 0f)
+            {
+                forwardSpeed = originalSpeed;
+                isSlowed = false;
+            }
+        }
     }
 
-    void MoveLane(bool right)
+    void MoveLane(bool toRight)
     {
-        currentLane += right ? 1 : -1;
+        currentLane += toRight ? 1 : -1;
         currentLane = Mathf.Clamp(currentLane, 0, 2);
+    }
+
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        if (hit.gameObject.CompareTag("Obstacle"))
+        {
+            if (!isSlowed)
+            {
+                forwardSpeed = originalSpeed / 2f;
+                slowTimer = slowDuration;
+                isSlowed = true;
+            }
+
+            // Muda de faixa automaticamente
+            if (currentLane == 1) // No centro? Vai para a esquerda
+                currentLane = 0;
+            else // Se já estiver nas laterais, volta pro centro
+                currentLane = 1;
+        }
     }
 }
