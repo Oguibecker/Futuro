@@ -1,13 +1,18 @@
 using UnityEngine;
+using System.Collections.Generic;
+
 
 public class GroundSpawner : MonoBehaviour
 {
-    public GameObject[] groundTilePrefabs; // Array para armazenar os prefabs
+    public GameObject[] groundTilePrefabs;
     private Vector3 nextSpawnPoint;
+    private Queue<GameObject> spawnedTiles = new Queue<GameObject>();
+
+    public int maxTiles = 7;
 
     void Start()
     {
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < maxTiles; i++)
         {
             SpawnTile();
         }
@@ -15,20 +20,26 @@ public class GroundSpawner : MonoBehaviour
 
     public void SpawnTile()
     {
-        if (groundTilePrefabs.Length == 0)
-        {
-            Debug.LogError("Não há prefabs de chão atribuídos no Inspector!");
-            return;
-        }
+        if (groundTilePrefabs.Length == 0) return;
 
-        // Escolher aleatoriamente um prefab
+        // Seleciona prefab aleatório
         int randomIndex = Random.Range(0, groundTilePrefabs.Length);
         GameObject selectedTile = groundTilePrefabs[randomIndex];
 
-        // Instanciar o prefab selecionado na posição desejada
-        GameObject temp = Instantiate(selectedTile, nextSpawnPoint, Quaternion.identity);
+        // Instancia e posiciona
+        GameObject newTile = Instantiate(selectedTile, nextSpawnPoint, Quaternion.identity);
 
-        // Atualiza o próximo ponto de spawn
-        nextSpawnPoint = temp.transform.Find("NextSpawnPoint").position;
+        // Atualiza ponto de spawn
+        nextSpawnPoint = newTile.transform.Find("NextSpawnPoint").position;
+
+        // Armazena tile
+        spawnedTiles.Enqueue(newTile);
+
+        // Se passou do limite, destrói a mais antiga
+        if (spawnedTiles.Count > maxTiles)
+        {
+            GameObject oldTile = spawnedTiles.Dequeue();
+            Destroy(oldTile);
+        }
     }
 }

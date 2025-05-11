@@ -3,30 +3,19 @@ using UnityEngine;
 public class GroundTile : MonoBehaviour
 {
     GroundSpawner groundSpawner;
+    private bool hasSpawned = false;
 
     void Start()
     {
-        groundSpawner = GameObject.FindObjectOfType<GroundSpawner>();
-        Invoke("SpawnAndDestroy", 1f); // Aguarda antes de executar
-    }
-
-    void SpawnAndDestroy()
-    {
-        if (groundSpawner != null)
-        {
-            groundSpawner.SpawnTile();
-        }
-
-        // Espera mais alguns segundos antes de destruir
-        Destroy(gameObject, 100f); // Tempo total = 1s (invoke) + 4s = 5s
+        groundSpawner = FindObjectOfType<GroundSpawner>();
     }
 
     void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && !hasSpawned)
         {
-            Destroy(gameObject,10f);
+            hasSpawned = true;
+            groundSpawner.SpawnTile();
         }
     }
-
 }

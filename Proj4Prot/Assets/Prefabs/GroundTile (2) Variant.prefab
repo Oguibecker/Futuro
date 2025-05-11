@@ -52,12 +52,17 @@ PrefabInstance:
       propertyPath: m_LocalPosition.x
       value: 0.022
       objectReference: {fileID: 0}
+    - target: {fileID: 8100943039702974115, guid: 5812b840c566b6e4588584eea49f15cb, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.111
+      objectReference: {fileID: 0}
     - target: {fileID: 9180609224100687174, guid: 5812b840c566b6e4588584eea49f15cb, type: 3}
       propertyPath: m_Name
       value: GroundTile (2) Variant
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 4219106283272149490, guid: 5812b840c566b6e4588584eea49f15cb, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5812b840c566b6e4588584eea49f15cb, type: 3}
