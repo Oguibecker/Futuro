@@ -8,21 +8,21 @@ public class PlayerController : MonoBehaviour
     public float gravity = 20f;
     public CharacterController controller;
 
+    public int maxLives = 3;
+    private int currentLives;
+    private Vector3 lastCheckpoint;
+
     private int currentLane = 1; // 0 = esquerda, 1 = centro, 2 = direita
     private Vector3 moveDirection;
     private float verticalVelocity;
-
-    private float originalSpeed;
-    private bool isSlowed = false;
-    private float slowDuration = 1f;
-    private float slowTimer = 0f;
 
     void Start()
     {
         if (controller == null)
             controller = GetComponent<CharacterController>();
 
-        originalSpeed = forwardSpeed;
+        currentLives = maxLives;
+        lastCheckpoint = transform.position;
     }
 
     void Update()
@@ -55,16 +55,6 @@ public class PlayerController : MonoBehaviour
             MoveLane(false);
         if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
             MoveLane(true);
-
-        if (isSlowed)
-        {
-            slowTimer -= Time.deltaTime;
-            if (slowTimer <= 0f)
-            {
-                forwardSpeed = originalSpeed;
-                isSlowed = false;
-            }
-        }
     }
 
     void MoveLane(bool toRight)
@@ -77,18 +67,32 @@ public class PlayerController : MonoBehaviour
     {
         if (hit.gameObject.CompareTag("Obstacle"))
         {
-            if (!isSlowed)
-            {
-                forwardSpeed = originalSpeed / 2f;
-                slowTimer = slowDuration;
-                isSlowed = true;
-            }
-
-            // Muda de faixa automaticamente
-            if (currentLane == 1) // No centro? Vai para a esquerda
-                currentLane = 0;
-            else // Se já estiver nas laterais, volta pro centro
-                currentLane = 1;
+            TakeDamage();
         }
+    }
+
+    void TakeDamage()
+    {
+        currentLives--;
+        if (currentLives <= 0)
+        {
+            Respawn();
+        }
+    }
+
+    void Respawn()
+    {
+        transform.position = lastCheckpoint;
+        currentLives = maxLives;
+    }
+
+    public void SetCheckpoint(Vector3 checkpoint)
+    {
+        lastCheckpoint = checkpoint;
+    }
+
+    public int GetLives()
+    {
+        return currentLives;
     }
 }
