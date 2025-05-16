@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿
+using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
@@ -40,7 +41,6 @@ public class PlayerController : MonoBehaviour
             verticalVelocity -= gravity * Time.deltaTime;
         }
 
-        // Define posição-alvo com base na faixa atual
         Vector3 targetPosition = transform.position.z * Vector3.forward;
         if (currentLane == 0)
             targetPosition += Vector3.left * laneDistance;
@@ -68,22 +68,37 @@ public class PlayerController : MonoBehaviour
         if (hit.gameObject.CompareTag("Obstacle"))
         {
             TakeDamage();
+
+            // Torna o obstáculo inativo por um tempo
+            Collider obstacleCollider = hit.collider;
+            if (obstacleCollider != null)
+                StartCoroutine(TemporarilyDisableCollider(obstacleCollider));
         }
     }
 
     void TakeDamage()
     {
         currentLives--;
+        Debug.Log("Vidas restantes: " + currentLives);
+
         if (currentLives <= 0)
         {
             Respawn();
         }
     }
 
+    System.Collections.IEnumerator TemporarilyDisableCollider(Collider col)
+    {
+        col.enabled = false;
+        yield return new WaitForSeconds(1f); // 1 segundo de invulnerabilidade ao mesmo obstáculo
+        col.enabled = true;
+    }
+
     void Respawn()
     {
         transform.position = lastCheckpoint;
         currentLives = maxLives;
+        Debug.Log("Respawn no checkpoint. Vidas resetadas.");
     }
 
     public void SetCheckpoint(Vector3 checkpoint)
