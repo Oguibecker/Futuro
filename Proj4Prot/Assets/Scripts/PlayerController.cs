@@ -28,6 +28,12 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+
+        if (currentLives <= 0)
+        {
+            Respawn();
+            return;
+        }
         moveDirection = Vector3.forward * forwardSpeed;
 
         if (controller.isGrounded)
@@ -55,6 +61,7 @@ public class PlayerController : MonoBehaviour
             MoveLane(false);
         if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
             MoveLane(true);
+
     }
 
     void MoveLane(bool toRight)
@@ -70,9 +77,9 @@ public class PlayerController : MonoBehaviour
             TakeDamage();
 
             // Torna o obstáculo inativo por um tempo
-            Collider obstacleCollider = hit.collider;
-            if (obstacleCollider != null)
-                StartCoroutine(TemporarilyDisableCollider(obstacleCollider));
+            Collider playerCollider = hit.collider;
+            if (playerCollider != null)
+                StartCoroutine(TemporarilyDisableCollider(playerCollider));
         }
     }
 
@@ -81,24 +88,20 @@ public class PlayerController : MonoBehaviour
         currentLives--;
         Debug.Log("Vidas restantes: " + currentLives);
 
-        if (currentLives <= 0)
-        {
-            Respawn();
-        }
     }
 
     System.Collections.IEnumerator TemporarilyDisableCollider(Collider col)
     {
         col.enabled = false;
-        yield return new WaitForSeconds(1f); // 1 segundo de invulnerabilidade ao mesmo obstáculo
+        yield return new WaitForSeconds(3f); 
         col.enabled = true;
     }
-
     void Respawn()
     {
-        transform.position = lastCheckpoint;
         currentLives = maxLives;
+        transform.position = lastCheckpoint;
         Debug.Log("Respawn no checkpoint. Vidas resetadas.");
+        Debug.Log(lastCheckpoint);
     }
 
     public void SetCheckpoint(Vector3 checkpoint)
