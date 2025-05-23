@@ -1,5 +1,4 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
@@ -17,6 +16,8 @@ public class PlayerController : MonoBehaviour
     private Vector3 moveDirection;
     private float verticalVelocity;
 
+    private bool isRespawning = false;  // ✅ Nova variável de controle
+
     void Start()
     {
         if (controller == null)
@@ -28,24 +29,9 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (isRespawning) return;  // ✅ Bloqueia toda a movimentação enquanto respawnando
 
-        if (currentLives <= 0)
-        {
-            Respawn();
-            return;
-        }
         moveDirection = Vector3.forward * forwardSpeed;
-
-        if (controller.isGrounded)
-        {
-            verticalVelocity = -0.5f;
-            if (Input.GetKeyDown(KeyCode.Space))
-                verticalVelocity = jumpForce;
-        }
-        else
-        {
-            verticalVelocity -= gravity * Time.deltaTime;
-        }
 
         Vector3 targetPosition = transform.position.z * Vector3.forward;
         if (currentLane == 0)
@@ -61,7 +47,6 @@ public class PlayerController : MonoBehaviour
             MoveLane(false);
         if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
             MoveLane(true);
-
     }
 
     void MoveLane(bool toRight)
@@ -76,7 +61,6 @@ public class PlayerController : MonoBehaviour
         {
             TakeDamage();
 
-            // Torna o obstáculo inativo por um tempo
             Collider playerCollider = hit.collider;
             if (playerCollider != null)
                 StartCoroutine(TemporarilyDisableCollider(playerCollider));
@@ -88,20 +72,35 @@ public class PlayerController : MonoBehaviour
         currentLives--;
         Debug.Log("Vidas restantes: " + currentLives);
 
+        if (currentLives <= 0)
+        {
+            StartCoroutine(Respawn());  // ✅ Agora respawn é coroutine para ter pequeno delay
+        }
     }
 
     System.Collections.IEnumerator TemporarilyDisableCollider(Collider col)
     {
         col.enabled = false;
-        yield return new WaitForSeconds(3f); 
+        yield return new WaitForSeconds(3f);
         col.enabled = true;
     }
-    void Respawn()
+
+    System.Collections.IEnumerator Respawn()
     {
-        currentLives = maxLives;
+        isRespawning = true;  // ✅ Desliga movimentação
+
+        // Opcional: colocar um pequeno delay para "efeito de respawn"
+        yield return new WaitForSeconds(0.5f);
+
         transform.position = lastCheckpoint;
+
+        currentLives = maxLives;
         Debug.Log("Respawn no checkpoint. Vidas resetadas.");
         Debug.Log(lastCheckpoint);
+
+        yield return new WaitForSeconds(0.2f);  // Pequeno delay extra, se quiser suavizar
+
+        isRespawning = false;  // ✅ Liga novamente a movimentação
     }
 
     public void SetCheckpoint(Vector3 checkpoint)
