@@ -16,7 +16,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 moveDirection;
     private float verticalVelocity;
 
-    private bool isRespawning = false;  // ✅ Nova variável de controle
+    private bool isRespawning = false;  
 
     void Start()
     {
@@ -29,7 +29,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (isRespawning) return;  // ✅ Bloqueia toda a movimentação enquanto respawnando
+        if (isRespawning) return; 
 
         moveDirection = Vector3.forward * forwardSpeed;
 
@@ -74,7 +74,7 @@ public class PlayerController : MonoBehaviour
 
         if (currentLives <= 0)
         {
-            StartCoroutine(Respawn());  // ✅ Agora respawn é coroutine para ter pequeno delay
+            StartCoroutine(Respawn());  
         }
     }
 
@@ -87,9 +87,9 @@ public class PlayerController : MonoBehaviour
 
     System.Collections.IEnumerator Respawn()
     {
-        isRespawning = true;  // ✅ Desliga movimentação
+        isRespawning = true;  
 
-        // Opcional: colocar um pequeno delay para "efeito de respawn"
+        
         yield return new WaitForSeconds(0.5f);
 
         transform.position = lastCheckpoint;
@@ -98,9 +98,9 @@ public class PlayerController : MonoBehaviour
         Debug.Log("Respawn no checkpoint. Vidas resetadas.");
         Debug.Log(lastCheckpoint);
 
-        yield return new WaitForSeconds(0.2f);  // Pequeno delay extra, se quiser suavizar
+        yield return new WaitForSeconds(0.2f); 
 
-        isRespawning = false;  // ✅ Liga novamente a movimentação
+        isRespawning = false;  
     }
 
     public void SetCheckpoint(Vector3 checkpoint)
