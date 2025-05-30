@@ -2,8 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+
 public class Checkpoint : MonoBehaviour
 {
+    public int beforeLevel;
+
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -12,6 +16,8 @@ public class Checkpoint : MonoBehaviour
             if (player != null)
             {
                 player.SetCheckpoint(transform.position);
+                player.laneMovementEnabled = beforeLevel;
+                player.currentLane = 1;
             }
         }
     }
