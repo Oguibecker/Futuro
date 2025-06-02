@@ -7,6 +7,7 @@ using UnityEngine;
 public class Checkpoint : MonoBehaviour
 {
     public int beforeLevel;
+    public int speedBooster = 0;
 
     void OnTriggerEnter(Collider other)
     {
@@ -15,9 +16,12 @@ public class Checkpoint : MonoBehaviour
             PlayerController player = other.GetComponent<PlayerController>();
             if (player != null)
             {
-                player.SetCheckpoint(transform.position);
+                player.lastCheckpoint = transform.position;
                 player.laneMovementEnabled = beforeLevel;
-                player.currentLane = 1;
+                if (speedBooster == 1){ //speeds up player if option is enabled, and removes it from instance as to not speed up on respawn.
+                    player.SpeedUp();
+                    speedBooster = 0;
+                }
             }
         }
     }

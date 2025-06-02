@@ -7,12 +7,11 @@ public class PlayerController : MonoBehaviour
     public float jumpForce = 8f;
     public float gravity = 20f;
     public CharacterController controller;
-    public AudioSource musicSource;
-    public AudioSource hurtSource;
 
     public int maxLives = 3;
     private int currentLives;
-    private Vector3 lastCheckpoint;
+    public Vector3 lastCheckpoint;
+    public float currentCollectableNumber;
 
     public int currentLane = 1; // 0 = esquerda, 1 = centro, 2 = direita
     private Vector3 moveDirection;
@@ -21,6 +20,14 @@ public class PlayerController : MonoBehaviour
 
     private bool isRespawning = false;  
 
+    // SOUND AND MUSIC
+    public float volumeControl;
+    public AudioSource musicSource;
+    public AudioSource hurtSource;
+    public AudioSource speedSource;
+    public AudioSource collectSource;
+
+
     void Start()
     {
         
@@ -28,6 +35,7 @@ public class PlayerController : MonoBehaviour
             controller = GetComponent<CharacterController>();
 
         currentLives = maxLives;
+        musicSource.volume = volumeControl;
         lastCheckpoint = transform.position;
     }
 
@@ -75,6 +83,13 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void SpeedUp()
+    {
+        forwardSpeed = forwardSpeed * 1.2f;
+        Debug.Log("Speeding Up - Speed = " + forwardSpeed);
+        StartCoroutine(playSFX("speed"));
+    }
+
     void TakeDamage()
     {
         currentLives--;
@@ -83,16 +98,32 @@ public class PlayerController : MonoBehaviour
         {
             StartCoroutine(Respawn());  
         } else {
-            StartCoroutine(damageSound());
+            StartCoroutine(playSFX("hurt"));
         }
     }
 
-    System.Collections.IEnumerator damageSound()
+    public void collectFuel()
     {
-        musicSource.volume = 0.1f;
-        hurtSource.Play();
+        StartCoroutine(playSFX("collect"));
+        currentCollectableNumber += 1;
+        Debug.Log("Collectable = " + currentCollectableNumber);
+    }
+
+    System.Collections.IEnumerator playSFX(string type)
+    {
+        musicSource.volume = volumeControl / 5f;
+        if (type == "speed"){
+            speedSource.Play();
+        } else if (type == "hurt"){
+            hurtSource.Play();
+        } else if (type == "collect"){
+            collectSource.Play();
+            collectSource.pitch = (1 + (currentCollectableNumber/10));
+            Debug.Log(collectSource.pitch);
+            musicSource.volume = volumeControl;
+        }
         yield return new WaitForSeconds(0.25f);
-        musicSource.volume = 0.5f;
+        musicSource.volume = volumeControl;
     }
 
     System.Collections.IEnumerator TemporarilyDisableCollider(Collider col)
@@ -113,14 +144,9 @@ public class PlayerController : MonoBehaviour
 
         currentLives = maxLives;
 
-        yield return new WaitForSeconds(0.2f); 
+        yield return new WaitForSeconds(0.5f); 
         musicSource.pitch = 1f;
         isRespawning = false;  
-    }
-
-    public void SetCheckpoint(Vector3 checkpoint)
-    {
-        lastCheckpoint = checkpoint;
     }
 
     public int GetLives()
