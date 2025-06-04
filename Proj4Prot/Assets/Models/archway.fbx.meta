@@ -3,7 +3,22 @@ guid: 19eebd33ed2932044b161c401ce68da5
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Arch Base.png
+    second: {fileID: 2100000, guid: dd0b4ac07c28c6149b7ebbc8ba6a20db, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Arch Main.png
+    second: {fileID: 2100000, guid: 730c0bdcbbb789b4bb85e80dba3140c8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: cylinder.png
+    second: {fileID: 2100000, guid: c064b02774792a64d8d56a684742efae, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -22,6 +22,8 @@ public class PlayerController : MonoBehaviour
     private bool isRespawning = false;  
 
     public Camera mainCamera;
+    public GameObject skybox;
+    private SkyboxRotator skyboxRotator;
 
     // SOUND AND MUSIC
     public float volumeControl;
@@ -40,6 +42,7 @@ public class PlayerController : MonoBehaviour
         currentLives = maxLives;
         musicSource.volume = volumeControl;
         lastCheckpoint = transform.position;
+        skyboxRotator = skybox.GetComponent<SkyboxRotator>();
     }
 
     void Update()
@@ -119,10 +122,12 @@ public class PlayerController : MonoBehaviour
     System.Collections.IEnumerator KeySpeedBoost()
     {
         float previousSpeed = forwardSpeed;
+        float previousSkyboxRotation = skyboxRotator.rotationSpeedY;
         float fovTimer = 0f;
         float fovFXduration = 0.5f;
 
         forwardSpeed = forwardSpeed * 1.5f;
+        skyboxRotator.rotationSpeedY = skyboxRotator.rotationSpeedY * 30f;
         Debug.Log("Boost Engaged = " + forwardSpeed);
 
         while (fovTimer < fovFXduration)
@@ -131,6 +136,7 @@ public class PlayerController : MonoBehaviour
             mainCamera.fieldOfView = Mathf.Lerp(120, 140, fovTimer / fovFXduration);
             yield return null;
         }
+
 
         StartCoroutine(playSFX("speed"));
 
@@ -144,6 +150,7 @@ public class PlayerController : MonoBehaviour
             yield return null;
         }
         forwardSpeed = previousSpeed;
+        skyboxRotator.rotationSpeedY = previousSkyboxRotation;
     }
 
     System.Collections.IEnumerator SpaceKeyCooldown()
@@ -187,7 +194,7 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
 
         transform.position = lastCheckpoint;
-
+        currentLane = 1;
         currentLives = maxLives;
 
         yield return new WaitForSeconds(0.5f); 
