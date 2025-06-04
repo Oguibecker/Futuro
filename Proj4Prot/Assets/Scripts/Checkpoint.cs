@@ -16,7 +16,7 @@ public class Checkpoint : MonoBehaviour
             PlayerController player = other.GetComponent<PlayerController>();
             if (player != null)
             {
-                player.lastCheckpoint = transform.position;
+                player.lastCheckpoint = new Vector3(transform.position.x, player.transform.position.y, transform.position.z);
                 player.laneMovementEnabled = beforeLevel;
                 if (speedBooster == 1){ //speeds up player if option is enabled, and removes it from instance as to not speed up on respawn.
                     player.SpeedUp();

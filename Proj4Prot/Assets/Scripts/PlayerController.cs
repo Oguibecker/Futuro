@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour
     public float jumpForce = 8f;
     public float gravity = 20f;
     public CharacterController controller;
+    public int keyCooldown;
 
     public int maxLives = 3;
     private int currentLives;
@@ -19,6 +20,8 @@ public class PlayerController : MonoBehaviour
     public int laneMovementEnabled = 0; //0 = no movement / 1 = movement
 
     private bool isRespawning = false;  
+
+    public Camera mainCamera;
 
     // SOUND AND MUSIC
     public float volumeControl;
@@ -60,6 +63,11 @@ public class PlayerController : MonoBehaviour
         if (laneMovementEnabled == 1){
             if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))  currentLane -= 1;
             if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D)) currentLane += 1;
+            if (Input.GetKeyDown(KeyCode.Space) && keyCooldown == 0)
+            {
+                StartCoroutine(KeySpeedBoost());
+                StartCoroutine(SpaceKeyCooldown());
+            }
         }
 
         // pan audio to current lane
@@ -86,7 +94,6 @@ public class PlayerController : MonoBehaviour
     public void SpeedUp()
     {
         forwardSpeed = forwardSpeed * 1.2f;
-        Debug.Log("Speeding Up - Speed = " + forwardSpeed);
         StartCoroutine(playSFX("speed"));
     }
 
@@ -107,6 +114,45 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(playSFX("collect"));
         currentCollectableNumber += 1;
         Debug.Log("Collectable = " + currentCollectableNumber);
+    }
+
+    System.Collections.IEnumerator KeySpeedBoost()
+    {
+        float previousSpeed = forwardSpeed;
+        float fovTimer = 0f;
+        float fovFXduration = 0.5f;
+
+        forwardSpeed = forwardSpeed * 1.5f;
+        Debug.Log("Boost Engaged = " + forwardSpeed);
+
+        while (fovTimer < fovFXduration)
+        {
+            fovTimer += Time.deltaTime;
+            mainCamera.fieldOfView = Mathf.Lerp(120, 140, fovTimer / fovFXduration);
+            yield return null;
+        }
+
+        StartCoroutine(playSFX("speed"));
+
+        yield return new WaitForSeconds(1f);
+
+        fovTimer = 0f;
+        while (fovTimer < fovFXduration)
+        {
+            fovTimer += Time.deltaTime;
+            mainCamera.fieldOfView = Mathf.Lerp(140, 120, fovTimer / fovFXduration);
+            yield return null;
+        }
+        forwardSpeed = previousSpeed;
+    }
+
+    System.Collections.IEnumerator SpaceKeyCooldown()
+    {
+        keyCooldown = 1;
+        yield return new WaitForSeconds(3f);
+        //StartCoroutine(playSFX("offCooldown"));
+        StartCoroutine(playSFX("collect"));
+        keyCooldown = 0;
     }
 
     System.Collections.IEnumerator playSFX(string type)
