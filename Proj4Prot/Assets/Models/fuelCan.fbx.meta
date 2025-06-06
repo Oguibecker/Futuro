@@ -3,7 +3,17 @@ guid: fa5582b747c6e1c43bac2dcb969ff8bc
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: gasCan.png
+    second: {fileID: 2100000, guid: b653ecd0b2e75ee43936385916ddf1fe, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: gasCap.png
+    second: {fileID: 2100000, guid: ec282a0b197e4b746ac52b615bd63d64, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
