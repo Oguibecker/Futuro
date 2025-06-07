@@ -1,13 +1,16 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
-    public float forwardSpeed = 15f;
+    public float forwardSpeed;
     public float laneDistance = 2f;
     public float jumpForce = 8f;
     public float gravity = 20f;
     public CharacterController controller;
     public int keyCooldown;
+    public int passedByCheckpoint = 0;
 
     public int maxLives = 3;
     private int currentLives;
@@ -24,6 +27,9 @@ public class PlayerController : MonoBehaviour
     public Camera mainCamera;
     public GameObject skybox;
     private SkyboxRotator skyboxRotator;
+    public Text GasolineText;
+    public Text BoosterText;
+    public Text DeathText;
 
     // SOUND AND MUSIC
     public float volumeControl;
@@ -114,9 +120,22 @@ public class PlayerController : MonoBehaviour
 
     public void collectFuel()
     {
-        StartCoroutine(playSFX("collect"));
+        string fullTextToType = "Gasoline: " + currentCollectableNumber;
         currentCollectableNumber += 1;
-        Debug.Log("Collectable = " + currentCollectableNumber);
+
+        StartCoroutine(playSFX("collect"));
+        StartCoroutine(WriteText(fullTextToType,GasolineText));
+    }
+
+    public IEnumerator WriteText(string textToType, Text textBox)
+    {
+        textBox.text = "";
+
+        for (int i = 0; i < textToType.Length; i++)
+        {
+            textBox.text += textToType[i];
+            yield return new WaitForSeconds(0.02f);
+        }
     }
 
     System.Collections.IEnumerator KeySpeedBoost()
@@ -142,6 +161,7 @@ public class PlayerController : MonoBehaviour
 
         yield return new WaitForSeconds(1f);
 
+
         fovTimer = 0f;
         while (fovTimer < fovFXduration)
         {
@@ -155,11 +175,37 @@ public class PlayerController : MonoBehaviour
 
     System.Collections.IEnumerator SpaceKeyCooldown()
     {
+        string DashBack = "Boosters Engaged";
+        BoosterText.color = Color.blue;
+        StartCoroutine(WriteText(DashBack,BoosterText));
+
         keyCooldown = 1;
         yield return new WaitForSeconds(3f);
-        //StartCoroutine(playSFX("offCooldown"));
+
+        if (passedByCheckpoint == 1){keyCooldown = 0; yield break;}
+
         StartCoroutine(playSFX("collect"));
         keyCooldown = 0;
+
+        DashBack = "Boosters Ready";
+        BoosterText.color = Color.white;
+        StartCoroutine(WriteText(DashBack,BoosterText));
+    }
+
+    public System.Collections.IEnumerator passedCheckpoint(int beforeLevel)
+    {
+        if (beforeLevel == 1 && isRespawning == false){
+            passedByCheckpoint = 0;
+            string DashBack = "Boosters Ready";
+            BoosterText.color = Color.white;
+            StartCoroutine(WriteText(DashBack,BoosterText));
+        } else{
+            passedByCheckpoint = 1;
+            string DashBack = "Boosters Offline";
+            BoosterText.color = Color.gray;
+            StartCoroutine(WriteText(DashBack,BoosterText));
+        }
+        yield break;
     }
 
     System.Collections.IEnumerator playSFX(string type)
@@ -172,7 +218,6 @@ public class PlayerController : MonoBehaviour
         } else if (type == "collect"){
             collectSource.Play();
             collectSource.pitch = (1 + (currentCollectableNumber/10));
-            Debug.Log(collectSource.pitch);
             musicSource.volume = volumeControl;
         }
         yield return new WaitForSeconds(0.25f);
@@ -190,6 +235,9 @@ public class PlayerController : MonoBehaviour
     {
         isRespawning = true;  
         musicSource.pitch = -1f;
+
+        string deathString = "Rebooting";
+        StartCoroutine(WriteText(deathString,DeathText));
         
         yield return new WaitForSeconds(0.5f);
 
@@ -199,7 +247,10 @@ public class PlayerController : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f); 
         musicSource.pitch = 1f;
-        isRespawning = false;  
+        isRespawning = false;
+
+        deathString = "";
+        StartCoroutine(WriteText(deathString,DeathText));
     }
 
     public int GetLives()
