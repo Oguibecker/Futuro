@@ -1,49 +1,66 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.Rendering.PostProcessing;
 
 public class PlayerController : MonoBehaviour
 {
-    public float forwardSpeed;
+    [Header("Game Variables")]
+    [Space]
+    private float GlobalSpeed = 20f;
+    private float forwardSpeed;
     public float laneDistance = 2f;
-    public float jumpForce = 8f;
-    public float gravity = 20f;
     public CharacterController controller;
     public int keyCooldown;
     public int passedByCheckpoint = 0;
 
+
+    [Header("Current GameState")]
+    [Space]
     public int maxLives = 3;
     private int currentLives;
     public Vector3 lastCheckpoint;
     public float currentCollectableNumber;
-
     public int currentLane = 1; // 0 = esquerda, 1 = centro, 2 = direita
-    private Vector3 moveDirection;
-    private float verticalVelocity;
     public int laneMovementEnabled = 0; //0 = no movement / 1 = movement
 
+    private Vector3 moveDirection;
+    private float verticalVelocity;
     private bool isRespawning = false;  
+    private IEnumerator settingTimer;
 
+    //SKYBOX ROTATION, UI
+    [Header("Camera, Skybox Rotation")]
+    [Space]
     public Camera mainCamera;
     public GameObject skybox;
     private SkyboxRotator skyboxRotator;
     public Text GasolineText;
     public Text BoosterText;
     public Text DeathText;
+    public Text TimerText;
+    public PostProcessVolume PPVolume;
+    private Vignette damageVignette;
 
     // SOUND AND MUSIC
+    [Header("Sound Control")]
+    [Space]
     public float volumeControl;
     public AudioSource musicSource;
     public AudioSource hurtSource;
     public AudioSource speedSource;
     public AudioSource collectSource;
+    public AudioSource heartbeat;
 
 
     void Start()
     {
-        
         if (controller == null)
             controller = GetComponent<CharacterController>();
+
+        PPVolume.profile.TryGetSettings(out damageVignette);
+
+        forwardSpeed = GlobalSpeed;
 
         currentLives = maxLives;
         musicSource.volume = volumeControl;
@@ -81,11 +98,13 @@ public class PlayerController : MonoBehaviour
 
         // pan audio to current lane
         if (currentLane == 0)
-            musicSource.panStereo = -0.5f;
+            musicSource.panStereo = -0.2f;
         if (currentLane == 1)
             musicSource.panStereo = 0;
         if (currentLane == 2)
-            musicSource.panStereo = 0.5f;
+            musicSource.panStereo = 0.2f;
+
+
     }
 
     private void OnControllerColliderHit(ControllerColliderHit hit)
@@ -102,20 +121,20 @@ public class PlayerController : MonoBehaviour
 
     public void SpeedUp()
     {
-        forwardSpeed = forwardSpeed * 1.2f;
-        StartCoroutine(playSFX("speed"));
+
     }
 
     void TakeDamage()
     {
         currentLives--;
-        Debug.Log("Vidas restantes: " + currentLives);
         if (currentLives <= 0)
         {
             StartCoroutine(Respawn());  
-        } else {
-            StartCoroutine(playSFX("hurt"));
         }
+        heartbeat.Play();
+        StartCoroutine(playSFX("hurt"));
+        StartCoroutine(damageSlowDown());
+        damageVignette.active = true;
     }
 
     public void collectFuel()
@@ -138,16 +157,34 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    System.Collections.IEnumerator damageSlowDown()
+    {
+        forwardSpeed = GlobalSpeed;
+        forwardSpeed = forwardSpeed * 0.5f;
+
+        keyCooldown = 1;
+        BoosterText.color = Color.red;
+        BoosterText.text = "-/-/-";
+
+        yield return new WaitForSeconds(1.5f);
+
+        forwardSpeed = GlobalSpeed;
+
+        keyCooldown = 0;
+        BoosterText.color = Color.white;
+        BoosterText.text = "Boosters Ready";
+    }
+
     System.Collections.IEnumerator KeySpeedBoost()
     {
-        float previousSpeed = forwardSpeed;
         float previousSkyboxRotation = skyboxRotator.rotationSpeedY;
         float fovTimer = 0f;
         float fovFXduration = 0.5f;
 
+        forwardSpeed = GlobalSpeed;
         forwardSpeed = forwardSpeed * 1.5f;
+
         skyboxRotator.rotationSpeedY = skyboxRotator.rotationSpeedY * 30f;
-        Debug.Log("Boost Engaged = " + forwardSpeed);
 
         while (fovTimer < fovFXduration)
         {
@@ -169,7 +206,8 @@ public class PlayerController : MonoBehaviour
             mainCamera.fieldOfView = Mathf.Lerp(140, 120, fovTimer / fovFXduration);
             yield return null;
         }
-        forwardSpeed = previousSpeed;
+
+        forwardSpeed = GlobalSpeed;
         skyboxRotator.rotationSpeedY = previousSkyboxRotation;
     }
 
@@ -194,18 +232,53 @@ public class PlayerController : MonoBehaviour
 
     public System.Collections.IEnumerator passedCheckpoint(int beforeLevel)
     {
-        if (beforeLevel == 1 && isRespawning == false){
+        if (beforeLevel == 1 && isRespawning == false){ //checkpoint is before level
             passedByCheckpoint = 0;
             string DashBack = "Boosters Ready";
             BoosterText.color = Color.white;
             StartCoroutine(WriteText(DashBack,BoosterText));
-        } else{
+            
+            GlobalSpeed = 30f;
+            forwardSpeed = GlobalSpeed;
+
+            settingTimer = SetTimer(15f,true);
+            StartCoroutine(settingTimer);
+
+        } else{ //checkpoint is before text
             passedByCheckpoint = 1;
             string DashBack = "Boosters Offline";
             BoosterText.color = Color.gray;
             StartCoroutine(WriteText(DashBack,BoosterText));
+            currentLives = maxLives;
+            damageVignette.active = false;
+            heartbeat.Stop();
+
+            GlobalSpeed = 20f;
+            forwardSpeed = GlobalSpeed;
+            StopCoroutine(settingTimer);
+            StartCoroutine(SetTimer(0f,false));
         }
+
+        
+        StartCoroutine(playSFX("speed"));
+
         yield break;
+    }
+
+    public IEnumerator SetTimer(float clockTime, bool enableClock)
+    {
+        if (enableClock == false){
+            TimerText.text = "--";
+        } else if (enableClock == true){
+
+            for (float j = clockTime; j > 0; j = j - 0.01f)
+            {
+                TimerText.text = j.ToString("F2");
+                yield return new WaitForSeconds(0.01f);
+            }
+
+        }
+
     }
 
     System.Collections.IEnumerator playSFX(string type)
@@ -244,6 +317,8 @@ public class PlayerController : MonoBehaviour
         transform.position = lastCheckpoint;
         currentLane = 1;
         currentLives = maxLives;
+        damageVignette.active = false;
+        heartbeat.Stop();
 
         yield return new WaitForSeconds(0.5f); 
         musicSource.pitch = 1f;
@@ -251,10 +326,5 @@ public class PlayerController : MonoBehaviour
 
         deathString = "";
         StartCoroutine(WriteText(deathString,DeathText));
-    }
-
-    public int GetLives()
-    {
-        return currentLives;
     }
 }

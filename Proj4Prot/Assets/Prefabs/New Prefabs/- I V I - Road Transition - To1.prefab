@@ -363,10 +363,6 @@ PrefabInstance:
       value: CheckPoint
       objectReference: {fileID: 0}
     - target: {fileID: 7891492456404581145, guid: a1f78950eda339a479cfd92d6919b78e, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 15
-      objectReference: {fileID: 0}
-    - target: {fileID: 7891492456404581145, guid: a1f78950eda339a479cfd92d6919b78e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -404,14 +400,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7891492456404581145, guid: a1f78950eda339a479cfd92d6919b78e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8097576098961526825, guid: a1f78950eda339a479cfd92d6919b78e, type: 3}
-      propertyPath: beforeLevel
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8097576098961526825, guid: a1f78950eda339a479cfd92d6919b78e, type: 3}
-      propertyPath: laneTransition
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

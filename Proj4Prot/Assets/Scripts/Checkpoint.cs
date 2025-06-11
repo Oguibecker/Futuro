@@ -21,7 +21,7 @@ public class Checkpoint : MonoBehaviour
                 if (beforeLevel == 0) {player.currentLane = 1;};
                 StartCoroutine(player.passedCheckpoint(beforeLevel));
                 if (speedBooster == 1){ //speeds up player if option is enabled, and removes it from instance as to not speed up on respawn.
-                    player.SpeedUp();
+                    //player.SpeedUp();
                     speedBooster = 0;
                 }
             }
