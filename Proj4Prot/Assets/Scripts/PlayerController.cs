@@ -139,11 +139,14 @@ public class PlayerController : MonoBehaviour
 
     public void collectFuel()
     {
+        /*
         string fullTextToType = "Gasoline: " + currentCollectableNumber;
-        currentCollectableNumber += 1;
+        StartCoroutine(WriteText(fullTextToType,GasolineText));*/
 
+
+        currentCollectableNumber += 1;
         StartCoroutine(playSFX("collect"));
-        StartCoroutine(WriteText(fullTextToType,GasolineText));
+        StartCoroutine(KeySpeedBoost());
     }
 
     public IEnumerator WriteText(string textToType, Text textBox)
@@ -232,7 +235,8 @@ public class PlayerController : MonoBehaviour
 
     public System.Collections.IEnumerator passedCheckpoint(int beforeLevel)
     {
-        if (beforeLevel == 1 && isRespawning == false){ //checkpoint is before level
+        if (beforeLevel == 1 && isRespawning == false)
+        { //checkpoint is before level
             passedByCheckpoint = 0;
             string DashBack = "Boosters Ready";
             BoosterText.color = Color.white;
@@ -241,10 +245,15 @@ public class PlayerController : MonoBehaviour
             GlobalSpeed = 30f;
             forwardSpeed = GlobalSpeed;
 
-            settingTimer = SetTimer(15f,true);
+            settingTimer = SetTimer(10f,true);
             StartCoroutine(settingTimer);
 
-        } else{ //checkpoint is before text
+        } else if (beforeLevel == 1 && isRespawning == true)
+        {
+            settingTimer = SetTimer(10f,true);
+            StartCoroutine(settingTimer);
+
+        } else if (beforeLevel == 0){ //checkpoint is before text
             passedByCheckpoint = 1;
             string DashBack = "Boosters Offline";
             BoosterText.color = Color.gray;
@@ -268,13 +277,35 @@ public class PlayerController : MonoBehaviour
     public IEnumerator SetTimer(float clockTime, bool enableClock)
     {
         if (enableClock == false){
-            TimerText.text = "--";
+            TimerText.color = Color.green;
+            yield return new WaitForSeconds(0.3f);
+            TimerText.color = Color.white;
+            yield return new WaitForSeconds(0.3f);
+            TimerText.color = Color.green;
+            yield return new WaitForSeconds(0.3f);
+            TimerText.color = Color.white;
+            
+            yield return new WaitForSeconds(2f);
+            TimerText.color = Color.gray;
+            TimerText.text = "--:--";
         } else if (enableClock == true){
-
+            
             for (float j = clockTime; j > 0; j = j - 0.01f)
             {
-                TimerText.text = j.ToString("F2");
+                // isolate the seconds and milliseconds for formatting
+                int seconds = Mathf.FloorToInt(j); 
+                int milliseconds = Mathf.FloorToInt((j - seconds) * 100);
+
+                string formattedSeconds = seconds.ToString("D2"); 
+                string formattedMilliseconds = milliseconds.ToString("D2");
+
+                if (seconds <= 5f) {TimerText.color = Color.red;}
+                else if (seconds > 5f) {TimerText.color = Color.white;}
+
+                TimerText.text = $"{formattedSeconds}:{formattedMilliseconds}";
                 yield return new WaitForSeconds(0.01f);
+
+                if (seconds <= 0f && milliseconds <= 0) {StartCoroutine(Respawn());} 
             }
 
         }
@@ -308,6 +339,7 @@ public class PlayerController : MonoBehaviour
     {
         isRespawning = true;  
         musicSource.pitch = -1f;
+        StopCoroutine(settingTimer);
 
         string deathString = "Rebooting";
         StartCoroutine(WriteText(deathString,DeathText));
