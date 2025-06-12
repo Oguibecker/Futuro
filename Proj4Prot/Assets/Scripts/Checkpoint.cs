@@ -38,10 +38,11 @@ public class Checkpoint : MonoBehaviour
                 if (chosenGimmick == Gimmick.None)
                 {
                     player.firstPerson(false);
-                    if (player.gimmickStateTD == true) {player.camTopDown(false);}
+                    if (player.gimmickStateTD == true) {player.camTopDown(false); player.gimmickStateTD = false;}
+                    if (player.gimmickState180 == true) {player.camTurn180(false); player.gimmickState180 = false;}
                 }
                 else if (chosenGimmick == Gimmick.FirstPerson)  {player.firstPerson(true);}
-                else if (chosenGimmick == Gimmick.TurnCam180)   {player.camTurn180();}
+                else if (chosenGimmick == Gimmick.TurnCam180)   {player.camTurn180(true); player.gimmickState180 = true;}
                 else if (chosenGimmick == Gimmick.TopDown)
                 {
                     player.camTopDown(true);

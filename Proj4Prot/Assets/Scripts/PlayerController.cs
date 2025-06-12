@@ -25,11 +25,13 @@ public class PlayerController : MonoBehaviour
     public int laneMovementEnabled = 0; //0 = no movement / 1 = movement
     public float previousCollectableNumber;
     public bool gimmickStateTD;
+    public bool gimmickState180;
 
     private Vector3 moveDirection;
     private float verticalVelocity;
     private bool isRespawning = false;  
     private IEnumerator settingTimer;
+    public bool reversedKeys = false;
 
     //SKYBOX ROTATION, UI
     [Header("Camera, Skybox Rotation")]
@@ -100,8 +102,13 @@ public class PlayerController : MonoBehaviour
         // lane movement
         currentLane = Mathf.Clamp(currentLane, 0, 2);
         if (laneMovementEnabled == 1){
-            if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))  currentLane -= 1;
-            if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D)) currentLane += 1;
+            if (reversedKeys == false){
+                if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))  currentLane -= 1;
+                if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D)) currentLane += 1;
+            } else if (reversedKeys == true){
+                if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))  currentLane += 1;
+                if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D)) currentLane -= 1;
+            }
             if (Input.GetKeyDown(KeyCode.Space) && keyCooldown == 0 && currentCollectableNumber >= 1)
             {
                 StartCoroutine(KeySpeedBoost());
@@ -274,7 +281,7 @@ public class PlayerController : MonoBehaviour
 
         if (passedByCheckpoint == 1){keyCooldown = 0; yield break;}
 
-        StartCoroutine(playSFX("collect"));
+        //StartCoroutine(playSFX("collect"));
         keyCooldown = 0;
 
         DashBack = "Boosters Ready";
@@ -296,6 +303,7 @@ public class PlayerController : MonoBehaviour
 
             settingTimer = SetTimer(10f,true);
             StartCoroutine(settingTimer);
+            StartCoroutine(playSFX("speed"));
 
         } else if (beforeLevel == 1 && isRespawning == true)
         {
@@ -318,7 +326,7 @@ public class PlayerController : MonoBehaviour
         }
 
         
-        StartCoroutine(playSFX("speed"));
+
 
         yield break;
     }
@@ -420,9 +428,12 @@ public class PlayerController : MonoBehaviour
         if (FPActive == true)   {cameraRotatorScript.offset = new Vector3(0,1f,0);}
     }
 
-    public void camTurn180()
+    public void camTurn180(bool C180Active)
     {        
         cameraRotatorScript.SmoothRotateCamera(180f,3);
+        reversedKeys = !reversedKeys;
+        if (C180Active == false)  {cameraRotatorScript.offset = defaultCamOffset;}
+        else if (C180Active == true)   {cameraRotatorScript.offset = new Vector3(0,5f,-3f);}
     }
 
     public void camTopDown(bool TDActive)
