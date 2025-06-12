@@ -2,12 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
-
 public class Checkpoint : MonoBehaviour
 {
     public int beforeLevel;
     public int speedBooster = 0;
+
+
+    public enum Gimmick
+    {
+        None,
+        FirstPerson,
+        TurnCam180,
+        TopDown,
+        Depleted
+    }
+
+    public Gimmick chosenGimmick;
 
     void OnTriggerEnter(Collider other)
     {
@@ -24,6 +34,24 @@ public class Checkpoint : MonoBehaviour
                     //player.SpeedUp();
                     speedBooster = 0;
                 }
+                
+                if (chosenGimmick == Gimmick.None)
+                {
+                    player.firstPerson(false);
+                    if (player.gimmickStateTD == true) {player.camTopDown(false);}
+                }
+                else if (chosenGimmick == Gimmick.FirstPerson)  {player.firstPerson(true);}
+                else if (chosenGimmick == Gimmick.TurnCam180)   {player.camTurn180();}
+                else if (chosenGimmick == Gimmick.TopDown)
+                {
+                    player.camTopDown(true);
+                    player.gimmickStateTD = true;
+                    Debug.Log("GSTD" + player.gimmickStateTD);
+                }
+
+                chosenGimmick = Gimmick.Depleted;
+
+
             }
         }
     }

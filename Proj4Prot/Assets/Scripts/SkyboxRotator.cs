@@ -8,6 +8,8 @@ public class SkyboxRotator : MonoBehaviour
     public float rotationSpeedY = 1f; 
     public float rotationSpeedZ = 0f; 
 
+    public GameObject player;
+
     void Awake() // InvertNormals
     {
         MeshFilter filter = GetComponent<MeshFilter>();
@@ -39,5 +41,8 @@ public class SkyboxRotator : MonoBehaviour
             rotationSpeedZ * Time.deltaTime,
             Space.Self // Rotate around the sphere's own axes
         );
+
+        transform.position = player.transform.position;
+        
     }
 }

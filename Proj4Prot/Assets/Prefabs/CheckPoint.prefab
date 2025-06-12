@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8097576098961526825}
   - component: {fileID: 8220082624279759619}
   - component: {fileID: 3303471639628677184}
+  - component: {fileID: -300508745605297416}
   m_Layer: 0
   m_Name: CheckPoint
   m_TagString: Untagged
@@ -56,8 +57,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 6, y: 6, z: 1}
-  m_Center: {x: 0, y: 2.5, z: 0}
+  m_Size: {x: 10, y: 11, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &8097576098961526825
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -122,6 +123,22 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &-300508745605297416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7496331805307050823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37800719eaa4f2d40bed47dde795fe80, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rotationSpeed: 50
+  maxRotationAngle: 45
+  RotateAroundZAxis: 0
+  RotateAroundYAxis: 1
 --- !u!1 &8917908724141192658
 GameObject:
   m_ObjectHideFlags: 0
@@ -149,7 +166,7 @@ Transform:
   m_GameObject: {fileID: 8917908724141192658}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 2.75, z: 0.5}
+  m_LocalPosition: {x: 0, y: 0, z: 0.5}
   m_LocalScale: {x: 11, y: 0.1, z: 11}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -231,7 +248,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 237c40c91303642428d6043160297569, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3.75
+      value: -6.5
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 237c40c91303642428d6043160297569, type: 3}
       propertyPath: m_LocalPosition.z

@@ -23,6 +23,8 @@ public class PlayerController : MonoBehaviour
     public float currentCollectableNumber;
     public int currentLane = 1; // 0 = esquerda, 1 = centro, 2 = direita
     public int laneMovementEnabled = 0; //0 = no movement / 1 = movement
+    public float previousCollectableNumber;
+    public bool gimmickStateTD;
 
     private Vector3 moveDirection;
     private float verticalVelocity;
@@ -33,14 +35,23 @@ public class PlayerController : MonoBehaviour
     [Header("Camera, Skybox Rotation")]
     [Space]
     public Camera mainCamera;
+    private CameraFollow cameraRotatorScript;
     public GameObject skybox;
     private SkyboxRotator skyboxRotator;
+    public Vector3 defaultCamOffset;
+
+    [Header("UI")]
+    [Space]
     public Text GasolineText;
     public Text BoosterText;
     public Text DeathText;
     public Text TimerText;
     public PostProcessVolume PPVolume;
     private Vignette damageVignette;
+    public GameObject fuelGaugeArrow;
+    private float currentFuelGaugeAngle;
+    private Coroutine currentFuelGaugeCoroutine;
+
 
     // SOUND AND MUSIC
     [Header("Sound Control")]
@@ -57,6 +68,8 @@ public class PlayerController : MonoBehaviour
     {
         if (controller == null)
             controller = GetComponent<CharacterController>();
+        
+        cameraRotatorScript = mainCamera.gameObject.GetComponent<CameraFollow>();
 
         PPVolume.profile.TryGetSettings(out damageVignette);
 
@@ -89,10 +102,11 @@ public class PlayerController : MonoBehaviour
         if (laneMovementEnabled == 1){
             if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))  currentLane -= 1;
             if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D)) currentLane += 1;
-            if (Input.GetKeyDown(KeyCode.Space) && keyCooldown == 0)
+            if (Input.GetKeyDown(KeyCode.Space) && keyCooldown == 0 && currentCollectableNumber >= 1)
             {
                 StartCoroutine(KeySpeedBoost());
                 StartCoroutine(SpaceKeyCooldown());
+
             }
         }
 
@@ -103,6 +117,7 @@ public class PlayerController : MonoBehaviour
             musicSource.panStereo = 0;
         if (currentLane == 2)
             musicSource.panStereo = 0.2f;
+
 
 
     }
@@ -119,11 +134,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void SpeedUp()
-    {
-
-    }
-
     void TakeDamage()
     {
         currentLives--;
@@ -138,15 +148,53 @@ public class PlayerController : MonoBehaviour
     }
 
     public void collectFuel()
-    {
-        /*
-        string fullTextToType = "Gasoline: " + currentCollectableNumber;
-        StartCoroutine(WriteText(fullTextToType,GasolineText));*/
-
-
-        currentCollectableNumber += 1;
+    {        
         StartCoroutine(playSFX("collect"));
-        StartCoroutine(KeySpeedBoost());
+        StartCoroutine(updateFuelGauge(1));
+    }
+
+    public IEnumerator updateFuelGauge(int gaugeMode)
+    {
+        previousCollectableNumber = currentCollectableNumber;
+        if (gaugeMode == 1) // ON MODE 1 - INCREMENT THE ARROW ONE STEP
+        {
+            currentCollectableNumber += 1;
+        }
+        else if (gaugeMode == 0) // ON MODE 0 - DECREMENT THE ARROW ALL THE WAY
+        {
+            currentCollectableNumber = 0;
+        }
+
+        if (currentFuelGaugeCoroutine != null)
+        {
+            StopCoroutine(currentFuelGaugeCoroutine);
+        }
+
+        currentFuelGaugeAngle = Mathf.Clamp((currentCollectableNumber * -30f) + 90f, -85f, 85f);
+        currentFuelGaugeCoroutine = StartCoroutine(SmoothlyRotateArrow(currentFuelGaugeAngle,gaugeMode));
+        // ROTATE THE ARROW SMOOTHLY TO THE DESIRED ANGLE
+        // IF MODE IS 1, ARROW GOES FAST. IF MODE IS 0, ARROW TAKES TIME EQUAL TO THE NUMBER OF FUEL.
+        yield return currentFuelGaugeCoroutine;
+    }
+
+    private IEnumerator SmoothlyRotateArrow(float targetZAngle, int smoothMode)
+    {
+        float startZAngle = fuelGaugeArrow.transform.localEulerAngles.z;
+        float elapsedTime = 0f;
+        float smoothRotationTime = 0f;
+        if (smoothMode == 1){smoothRotationTime = 0.2f;}
+        else if (smoothMode == 0) {smoothRotationTime = previousCollectableNumber;}
+
+        while (elapsedTime < smoothRotationTime)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / smoothRotationTime;
+            float interpolatedZAngle = Mathf.LerpAngle(startZAngle, targetZAngle, t);
+            fuelGaugeArrow.transform.localEulerAngles = new Vector3(0f, 0f, interpolatedZAngle);
+            yield return null;
+        }
+
+        fuelGaugeArrow.transform.localEulerAngles = new Vector3(0f, 0f, targetZAngle);
     }
 
     public IEnumerator WriteText(string textToType, Text textBox)
@@ -187,7 +235,7 @@ public class PlayerController : MonoBehaviour
         forwardSpeed = GlobalSpeed;
         forwardSpeed = forwardSpeed * 1.5f;
 
-        skyboxRotator.rotationSpeedY = skyboxRotator.rotationSpeedY * 30f;
+        skyboxRotator.rotationSpeedY = skyboxRotator.rotationSpeedY * 10f;
 
         while (fovTimer < fovFXduration)
         {
@@ -196,10 +244,7 @@ public class PlayerController : MonoBehaviour
             yield return null;
         }
 
-
-        StartCoroutine(playSFX("speed"));
-
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(previousCollectableNumber);
 
 
         fovTimer = 0f;
@@ -221,7 +266,11 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(WriteText(DashBack,BoosterText));
 
         keyCooldown = 1;
-        yield return new WaitForSeconds(3f);
+        StartCoroutine(playSFX("speed"));
+        StartCoroutine(updateFuelGauge(0));
+        Debug.Log("dashing for "+ previousCollectableNumber +" seconds");
+
+        yield return new WaitForSeconds(previousCollectableNumber);
 
         if (passedByCheckpoint == 1){keyCooldown = 0; yield break;}
 
@@ -359,4 +408,38 @@ public class PlayerController : MonoBehaviour
         deathString = "";
         StartCoroutine(WriteText(deathString,DeathText));
     }
+
+
+
+// LEVEL GIMMICKS
+
+    public void firstPerson(bool FPActive)
+    {        
+        //cameraRotatorScript.SmoothRotateCamera(30f,1); new Vector3(0,1.5f,-3f);
+        if (FPActive == false)  {cameraRotatorScript.offset = defaultCamOffset;}
+        if (FPActive == true)   {cameraRotatorScript.offset = new Vector3(0,1f,0);}
+    }
+
+    public void camTurn180()
+    {        
+        cameraRotatorScript.SmoothRotateCamera(180f,3);
+    }
+
+    public void camTopDown(bool TDActive)
+    {        
+        if (TDActive == false)
+        {
+            cameraRotatorScript.SmoothRotateCamera(-65f,1);
+            cameraRotatorScript.offset = defaultCamOffset;
+            Debug.Log("resetting cam");
+        }
+        if (TDActive == true)
+        {
+            cameraRotatorScript.SmoothRotateCamera(65f,1);
+            cameraRotatorScript.offset = new Vector3(0,20f,15f);
+            Debug.Log("going up");
+        }
+        
+    }
+
 }
