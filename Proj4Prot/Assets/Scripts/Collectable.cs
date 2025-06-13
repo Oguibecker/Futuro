@@ -17,4 +17,9 @@ public class Collectable : MonoBehaviour
             }
         }
     }
+
+    public void ResetCollectables()
+    {
+        transform.localScale = new Vector3(1, 1, 1);
+    }
 }

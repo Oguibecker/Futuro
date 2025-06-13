@@ -301,13 +301,13 @@ public class PlayerController : MonoBehaviour
             GlobalSpeed = 30f;
             forwardSpeed = GlobalSpeed;
 
-            settingTimer = SetTimer(10f,true);
+            settingTimer = SetTimer(8f,true);
             StartCoroutine(settingTimer);
             StartCoroutine(playSFX("speed"));
 
         } else if (beforeLevel == 1 && isRespawning == true)
         {
-            settingTimer = SetTimer(10f,true);
+            settingTimer = SetTimer(8f,true);
             StartCoroutine(settingTimer);
 
         } else if (beforeLevel == 0){ //checkpoint is before text
@@ -398,6 +398,20 @@ public class PlayerController : MonoBehaviour
         musicSource.pitch = -1f;
         StopCoroutine(settingTimer);
 
+
+
+        GameObject[] fuelObjects = GameObject.FindGameObjectsWithTag("Fuel");
+
+        foreach (GameObject fuelObject in fuelObjects)
+        {
+
+            fuelObject.SendMessage("ResetCollectables");
+
+        }
+        StartCoroutine(updateFuelGauge(0));
+
+
+
         string deathString = "Rebooting";
         StartCoroutine(WriteText(deathString,DeathText));
         
@@ -440,14 +454,14 @@ public class PlayerController : MonoBehaviour
     {        
         if (TDActive == false)
         {
-            cameraRotatorScript.SmoothRotateCamera(-65f,1);
+            cameraRotatorScript.SmoothRotateCamera(-45f,1);
             cameraRotatorScript.offset = defaultCamOffset;
             Debug.Log("resetting cam");
         }
         if (TDActive == true)
         {
-            cameraRotatorScript.SmoothRotateCamera(65f,1);
-            cameraRotatorScript.offset = new Vector3(0,20f,15f);
+            cameraRotatorScript.SmoothRotateCamera(45f,1);
+            cameraRotatorScript.offset = new Vector3(0,20f,0f);
             Debug.Log("going up");
         }
         
