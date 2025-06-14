@@ -14,6 +14,8 @@ public class SimpleRotateObject : MonoBehaviour
     private bool RotateAroundZAxis = true;
     [SerializeField]
     private bool RotateAroundYAxis = false;
+    [SerializeField]
+    private bool RotateAroundXAxis = false;
 
     private float initialYRotation; // To store the starting Y rotation
     private float currentPingPongTime = 0f;
@@ -27,8 +29,11 @@ public class SimpleRotateObject : MonoBehaviour
         if (RotateAroundYAxis == true){
             transform.Rotate(Vector3.forward * rotationSpeed * Time.deltaTime);
         }
+        if (RotateAroundXAxis == true){
+            transform.Rotate(Vector3.right * rotationSpeed * Time.deltaTime);
+        }
         
-        if (RotateAroundZAxis == false && RotateAroundYAxis == false){
+        if (RotateAroundZAxis == false && RotateAroundYAxis == false && RotateAroundXAxis == false){
             currentPingPongTime += Time.deltaTime * rotationSpeed / maxRotationAngle;
             float desiredYRotationOffset = Mathf.PingPong(currentPingPongTime, 1f) * maxRotationAngle * 2 - maxRotationAngle;
             transform.localEulerAngles = new Vector3(

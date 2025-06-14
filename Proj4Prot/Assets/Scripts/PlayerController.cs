@@ -27,11 +27,15 @@ public class PlayerController : MonoBehaviour
     public bool gimmickStateTD;
     public bool gimmickState180;
 
+    public bool isBoosting = false;
+
     private Vector3 moveDirection;
     private float verticalVelocity;
     private bool isRespawning = false;  
+    private bool isHurt = false;  
     private IEnumerator settingTimer;
     public bool reversedKeys = false;
+    public float fuelAmount = 0f;
 
     //SKYBOX ROTATION, UI
     [Header("Camera, Skybox Rotation")]
@@ -46,13 +50,15 @@ public class PlayerController : MonoBehaviour
     [Space]
     public Text GasolineText;
     public Text BoosterText;
-    public Text DeathText;
+    public GameObject DeathText;
     public Text TimerText;
     public PostProcessVolume PPVolume;
     private Vignette damageVignette;
     public GameObject fuelGaugeArrow;
     private float currentFuelGaugeAngle;
     private Coroutine currentFuelGaugeCoroutine;
+    public GameObject fuelBar;
+    public GameObject fuelBarDisabled;
 
 
     // SOUND AND MUSIC
@@ -65,6 +71,7 @@ public class PlayerController : MonoBehaviour
     public AudioSource collectSource;
     public AudioSource heartbeat;
 
+    public Vector3 targetTextLocation;
 
     void Start()
     {
@@ -81,6 +88,8 @@ public class PlayerController : MonoBehaviour
         musicSource.volume = volumeControl;
         lastCheckpoint = transform.position;
         skyboxRotator = skybox.GetComponent<SkyboxRotator>();
+        targetTextLocation = new Vector3(0f, 950f, 80f);
+        
     }
 
     void Update()
@@ -109,13 +118,22 @@ public class PlayerController : MonoBehaviour
                 if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))  currentLane += 1;
                 if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D)) currentLane -= 1;
             }
-            if (Input.GetKeyDown(KeyCode.Space) && keyCooldown == 0 && currentCollectableNumber >= 1)
-            {
-                StartCoroutine(KeySpeedBoost());
-                StartCoroutine(SpaceKeyCooldown());
 
-            }
+            if (Input.GetKey(KeyCode.Space)){isBoosting = true;}
+            else {isBoosting = false;}
+
+            //If the player has fuel, increase their speed by 2x, and decrement their fuel for the time they are pressing the button.
+            if (fuelAmount > 0 && isBoosting && !isRespawning && !isHurt){
+                forwardSpeed = GlobalSpeed * 2f;
+                fuelAmount -= Time.deltaTime;
+                skyboxRotator.rotationSpeedY = forwardSpeed/2f;
+            } else {forwardSpeed = GlobalSpeed;}
+
+            if (fuelAmount < 0){fuelAmount = 0; forwardSpeed = GlobalSpeed;}
         }
+
+            Vector3 targetFuelScale = new Vector3(1f, fuelAmount*3, 1f);
+            fuelBar.transform.localScale = Vector3.Lerp(fuelBar.transform.localScale, targetFuelScale, Time.deltaTime * 6);
 
         // pan audio to current lane
         if (currentLane == 0)
@@ -125,42 +143,48 @@ public class PlayerController : MonoBehaviour
         if (currentLane == 2)
             musicSource.panStereo = 0.2f;
 
-
+        
+        //DeathText.transform.position = Vector3.Lerp(DeathText.transform.position, targetTextLocation, Time.deltaTime * 10);
+        DeathText.transform.position = targetTextLocation;
 
     }
 
-    private void OnControllerColliderHit(ControllerColliderHit hit)
+    private IEnumerator OnControllerColliderHit(ControllerColliderHit hit)
     {
         if (hit.gameObject.CompareTag("Obstacle"))
-        {
-            TakeDamage();
+        {   
+            isHurt = true;
+            fuelBarDisabled.transform.localScale = new Vector3(1f,9f,1f);
+            currentLives--;
+            if (currentLives <= 0)
+            {
+                StartCoroutine(Respawn());  
+            }
+            heartbeat.Play();
+            StartCoroutine(playSFX("hurt"));
+            //StartCoroutine(damageSlowDown());
+            damageVignette.active = true;
 
             Collider playerCollider = hit.collider;
-            if (playerCollider != null)
-                StartCoroutine(TemporarilyDisableCollider(playerCollider));
+            if (playerCollider != null){StartCoroutine(TemporarilyDisableCollider(playerCollider));}
+
+            yield return new WaitForSeconds(1.5f);
+            fuelBarDisabled.transform.localScale = new Vector3(1f,0f,1f);
+            isHurt = false;
+
+
         }
     }
 
-    void TakeDamage()
-    {
-        currentLives--;
-        if (currentLives <= 0)
-        {
-            StartCoroutine(Respawn());  
-        }
-        heartbeat.Play();
-        StartCoroutine(playSFX("hurt"));
-        StartCoroutine(damageSlowDown());
-        damageVignette.active = true;
-    }
 
     public void collectFuel()
     {        
         StartCoroutine(playSFX("collect"));
-        StartCoroutine(updateFuelGauge(1));
+        if (fuelAmount < 2.5) {fuelAmount += 1f;}
+        //StartCoroutine(updateFuelGauge(1));
     }
 
-    public IEnumerator updateFuelGauge(int gaugeMode)
+    /*public IEnumerator updateFuelGauge(int gaugeMode)
     {
         previousCollectableNumber = currentCollectableNumber;
         if (gaugeMode == 1) // ON MODE 1 - INCREMENT THE ARROW ONE STEP
@@ -202,7 +226,7 @@ public class PlayerController : MonoBehaviour
         }
 
         fuelGaugeArrow.transform.localEulerAngles = new Vector3(0f, 0f, targetZAngle);
-    }
+    }*/
 
     public IEnumerator WriteText(string textToType, Text textBox)
     {
@@ -233,6 +257,7 @@ public class PlayerController : MonoBehaviour
         BoosterText.text = "Boosters Ready";
     }
 
+    /*
     System.Collections.IEnumerator KeySpeedBoost()
     {
         float previousSkyboxRotation = skyboxRotator.rotationSpeedY;
@@ -274,8 +299,7 @@ public class PlayerController : MonoBehaviour
 
         keyCooldown = 1;
         StartCoroutine(playSFX("speed"));
-        StartCoroutine(updateFuelGauge(0));
-        Debug.Log("dashing for "+ previousCollectableNumber +" seconds");
+        //StartCoroutine(updateFuelGauge(0));
 
         yield return new WaitForSeconds(previousCollectableNumber);
 
@@ -287,7 +311,7 @@ public class PlayerController : MonoBehaviour
         DashBack = "Boosters Ready";
         BoosterText.color = Color.white;
         StartCoroutine(WriteText(DashBack,BoosterText));
-    }
+    }*/
 
     public System.Collections.IEnumerator passedCheckpoint(int beforeLevel)
     {
@@ -301,13 +325,13 @@ public class PlayerController : MonoBehaviour
             GlobalSpeed = 30f;
             forwardSpeed = GlobalSpeed;
 
-            settingTimer = SetTimer(5f,true);
+            settingTimer = SetTimer(9f,true);
             StartCoroutine(settingTimer);
             StartCoroutine(playSFX("speed"));
 
         } else if (beforeLevel == 1 && isRespawning == true)
         {
-            settingTimer = SetTimer(5f,true);
+            settingTimer = SetTimer(9f,true);
             StartCoroutine(settingTimer);
 
         } else if (beforeLevel == 0){ //checkpoint is before text
@@ -325,48 +349,64 @@ public class PlayerController : MonoBehaviour
             StartCoroutine(SetTimer(0f,false));
         }
 
-        
-
-
+        fuelAmount = 0f;
         yield break;
     }
 
     public IEnumerator SetTimer(float clockTime, bool enableClock)
     {
-        if (enableClock == false){
-            TimerText.color = Color.green;
-            yield return new WaitForSeconds(0.3f);
-            TimerText.color = Color.white;
-            yield return new WaitForSeconds(0.3f);
-            TimerText.color = Color.green;
-            yield return new WaitForSeconds(0.3f);
-            TimerText.color = Color.white;
-            
+        if (!enableClock)
+        {
+            for (int i = 0; i < 2; i++) // Flash twice
+            {
+                TimerText.color = Color.green;
+                yield return new WaitForSeconds(0.3f);
+                TimerText.color = Color.white;
+                yield return new WaitForSeconds(0.3f);
+            }
+
             yield return new WaitForSeconds(2f);
             TimerText.color = Color.gray;
             TimerText.text = "--:--";
-        } else if (enableClock == true){
-            
-            for (float j = clockTime; j > 0; j = j - 0.01f)
-            {
-                // isolate the seconds and milliseconds for formatting
-                int seconds = Mathf.FloorToInt(j); 
-                int milliseconds = Mathf.FloorToInt((j - seconds) * 100);
+        }
+        else // enableClock is true
+        {
+            float currentClockTime = clockTime;
 
-                string formattedSeconds = seconds.ToString("D2"); 
+            while (currentClockTime > 0)
+            {
+                currentClockTime -= Time.deltaTime;
+
+                if (currentClockTime < 0)
+                {
+                    currentClockTime = 0;
+                }
+
+                int seconds = Mathf.FloorToInt(currentClockTime);
+                int milliseconds = Mathf.FloorToInt((currentClockTime - seconds) * 100);
+
+                string formattedSeconds = seconds.ToString("D2");
                 string formattedMilliseconds = milliseconds.ToString("D2");
 
-                if (seconds <= 5f) {TimerText.color = Color.red;}
-                else if (seconds > 5f) {TimerText.color = Color.white;}
+                if (currentClockTime <= 5f)
+                {
+                    TimerText.color = Color.red;
+                    
+                }
+                else
+                {
+                    TimerText.color = Color.white;
+                }
 
                 TimerText.text = $"{formattedSeconds}:{formattedMilliseconds}";
-                yield return new WaitForSeconds(0.01f);
 
-                if (seconds <= 0f && milliseconds <= 0) {StartCoroutine(Respawn());} 
+                yield return null;
             }
 
-        }
+            TimerText.text = "00:00";
+            StartCoroutine(Respawn());
 
+        }
     }
 
     System.Collections.IEnumerator playSFX(string type)
@@ -398,8 +438,6 @@ public class PlayerController : MonoBehaviour
         musicSource.pitch = -1f;
         StopCoroutine(settingTimer);
 
-
-
         GameObject[] fuelObjects = GameObject.FindGameObjectsWithTag("Fuel");
 
         foreach (GameObject fuelObject in fuelObjects)
@@ -408,13 +446,9 @@ public class PlayerController : MonoBehaviour
             fuelObject.SendMessage("ResetCollectables");
 
         }
-        StartCoroutine(updateFuelGauge(0));
 
+        //targetTextLocation = new Vector3(0f, -1000f, 80f);
 
-
-        string deathString = "Rebooting";
-        StartCoroutine(WriteText(deathString,DeathText));
-        
         yield return new WaitForSeconds(0.5f);
 
         transform.position = lastCheckpoint;
@@ -423,12 +457,14 @@ public class PlayerController : MonoBehaviour
         damageVignette.active = false;
         heartbeat.Stop();
 
-        yield return new WaitForSeconds(0.5f); 
+        yield return new WaitForSeconds(0.2f); 
         musicSource.pitch = 1f;
         isRespawning = false;
 
-        deathString = "";
-        StartCoroutine(WriteText(deathString,DeathText));
+        //targetTextLocation = new Vector3(0f, 950f, 80f);
+
+        //deathString = "";
+        //StartCoroutine(WriteText(deathString,DeathText));
     }
 
 
@@ -456,13 +492,11 @@ public class PlayerController : MonoBehaviour
         {
             cameraRotatorScript.SmoothRotateCamera(-45f,1);
             cameraRotatorScript.offset = defaultCamOffset;
-            Debug.Log("resetting cam");
         }
         if (TDActive == true)
         {
             cameraRotatorScript.SmoothRotateCamera(45f,1);
             cameraRotatorScript.offset = new Vector3(0,20f,0f);
-            Debug.Log("going up");
         }
         
     }
