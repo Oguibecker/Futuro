@@ -301,13 +301,13 @@ public class PlayerController : MonoBehaviour
             GlobalSpeed = 30f;
             forwardSpeed = GlobalSpeed;
 
-            settingTimer = SetTimer(8f,true);
+            settingTimer = SetTimer(5f,true);
             StartCoroutine(settingTimer);
             StartCoroutine(playSFX("speed"));
 
         } else if (beforeLevel == 1 && isRespawning == true)
         {
-            settingTimer = SetTimer(8f,true);
+            settingTimer = SetTimer(5f,true);
             StartCoroutine(settingTimer);
 
         } else if (beforeLevel == 0){ //checkpoint is before text

@@ -67,7 +67,14 @@ public class MainMenu : MonoBehaviour
 
     public void QuitGame()
     {
-        Application.Quit();
+        if (isStartMenu)
+        {
+            Application.Quit();
+        }
+        else
+        {
+            SceneManager.LoadScene("MainMenu");
+        }
     }
 
     private void PauseGame()

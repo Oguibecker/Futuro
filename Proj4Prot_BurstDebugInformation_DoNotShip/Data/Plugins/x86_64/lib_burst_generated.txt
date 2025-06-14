@@ -18,6 +18,7 @@ Library: C:\Users\Usuario\Documents\GitHub\ProjetoIV\Proj4Prot\Temp\BurstOutput\
 --assembly-defines=Unity.Postprocessing.Runtime;
 --assembly-defines=Unity.Burst;
 --assembly-defines=Unity.Mathematics;
+--assembly-defines=Unity.TextMeshPro;
 --assembly-defines=Unity.RenderPipelines.Universal.Shaders;
 --assembly-defines=Unity.RenderPipelines.Universal.Config.Runtime;
 --assembly-defines=Unity.RenderPipeline.Universal.ShaderLibrary;
@@ -73,6 +74,7 @@ Library: C:\Users\Usuario\Documents\GitHub\ProjetoIV\Proj4Prot\Temp\BurstOutput\
 --assembly-defines=Unity.Postprocessing.Runtime;
 --assembly-defines=Unity.Burst;
 --assembly-defines=Unity.Mathematics;
+--assembly-defines=Unity.TextMeshPro;
 --assembly-defines=Unity.RenderPipelines.Universal.Shaders;
 --assembly-defines=Unity.RenderPipelines.Universal.Config.Runtime;
 --assembly-defines=Unity.RenderPipeline.Universal.ShaderLibrary;
@@ -126,6 +128,7 @@ Library: C:\Users\Usuario\Documents\GitHub\ProjetoIV\Proj4Prot\Temp\BurstOutput\
 --assembly-defines=Unity.Postprocessing.Runtime;
 --assembly-defines=Unity.Burst;
 --assembly-defines=Unity.Mathematics;
+--assembly-defines=Unity.TextMeshPro;
 --assembly-defines=Unity.RenderPipelines.Universal.Shaders;
 --assembly-defines=Unity.RenderPipelines.Universal.Config.Runtime;
 --assembly-defines=Unity.RenderPipeline.Universal.ShaderLibrary;
@@ -185,6 +188,7 @@ Library: C:\Users\Usuario\Documents\GitHub\ProjetoIV\Proj4Prot\Temp\BurstOutput\
 --assembly-defines=Unity.Postprocessing.Runtime;
 --assembly-defines=Unity.Burst;
 --assembly-defines=Unity.Mathematics;
+--assembly-defines=Unity.TextMeshPro;
 --assembly-defines=Unity.RenderPipelines.Universal.Shaders;
 --assembly-defines=Unity.RenderPipelines.Universal.Config.Runtime;
 --assembly-defines=Unity.RenderPipeline.Universal.ShaderLibrary;
