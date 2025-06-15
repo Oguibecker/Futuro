@@ -8,8 +8,9 @@ public class MainMenu : MonoBehaviour
     public GameObject panelMainMenu;
     public GameObject panelOptions;
 
-    [Header("Configurações")]
+    [Header("Config")]
     public bool isStartMenu = false; 
+    public bool narrativeOn = false; 
 
     private bool isPaused = false;
 
@@ -30,7 +31,7 @@ public class MainMenu : MonoBehaviour
 
     private void Update()
     {
-        if (!isStartMenu && Input.GetKeyDown(KeyCode.Escape))
+        if (!isStartMenu && !narrativeOn && Input.GetKeyDown(KeyCode.Escape))
         {
             if (isPaused)
                 ResumeGame();

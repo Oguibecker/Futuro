@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using System.Collections;
 using UnityEngine.Rendering.PostProcessing;
+using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
@@ -50,7 +51,6 @@ public class PlayerController : MonoBehaviour
     [Space]
     public Text GasolineText;
     public Text BoosterText;
-    public GameObject DeathText;
     public Text TimerText;
     public PostProcessVolume PPVolume;
     private Vignette damageVignette;
@@ -59,6 +59,9 @@ public class PlayerController : MonoBehaviour
     private Coroutine currentFuelGaugeCoroutine;
     public GameObject fuelBar;
     public GameObject fuelBarDisabled;
+
+    public GameObject DeathText;
+    private RectTransform deathTextRectTransform;
 
 
     // SOUND AND MUSIC
@@ -71,7 +74,7 @@ public class PlayerController : MonoBehaviour
     public AudioSource collectSource;
     public AudioSource heartbeat;
 
-    public Vector3 targetTextLocation;
+    public Vector2 targetTextLocation;
 
     void Start()
     {
@@ -79,6 +82,8 @@ public class PlayerController : MonoBehaviour
             controller = GetComponent<CharacterController>();
         
         cameraRotatorScript = mainCamera.gameObject.GetComponent<CameraFollow>();
+
+        deathTextRectTransform = DeathText.GetComponent<RectTransform>();
 
         PPVolume.profile.TryGetSettings(out damageVignette);
 
@@ -88,7 +93,7 @@ public class PlayerController : MonoBehaviour
         musicSource.volume = volumeControl;
         lastCheckpoint = transform.position;
         skyboxRotator = skybox.GetComponent<SkyboxRotator>();
-        targetTextLocation = new Vector3(0f, 950f, 80f);
+        targetTextLocation = new Vector2(0f, 950f);
         
     }
 
@@ -144,8 +149,7 @@ public class PlayerController : MonoBehaviour
             musicSource.panStereo = 0.2f;
 
         
-        //DeathText.transform.position = Vector3.Lerp(DeathText.transform.position, targetTextLocation, Time.deltaTime * 10);
-        DeathText.transform.position = targetTextLocation;
+
 
     }
 
@@ -434,20 +438,11 @@ public class PlayerController : MonoBehaviour
 
     System.Collections.IEnumerator Respawn()
     {
+        deathTextRectTransform.anchoredPosition = new Vector2(0f, 0f);
         isRespawning = true;  
         musicSource.pitch = -1f;
         StopCoroutine(settingTimer);
-
-        GameObject[] fuelObjects = GameObject.FindGameObjectsWithTag("Fuel");
-
-        foreach (GameObject fuelObject in fuelObjects)
-        {
-
-            fuelObject.SendMessage("ResetCollectables");
-
-        }
-
-        //targetTextLocation = new Vector3(0f, -1000f, 80f);
+        StartCoroutine(resetFuel());
 
         yield return new WaitForSeconds(0.5f);
 
@@ -461,12 +456,24 @@ public class PlayerController : MonoBehaviour
         musicSource.pitch = 1f;
         isRespawning = false;
 
-        //targetTextLocation = new Vector3(0f, 950f, 80f);
+        deathTextRectTransform.anchoredPosition = new Vector2(0f, 1500f);
 
         //deathString = "";
         //StartCoroutine(WriteText(deathString,DeathText));
     }
 
+    System.Collections.IEnumerator resetFuel()
+    {
+        GameObject[] fuelObjects = GameObject.FindGameObjectsWithTag("Fuel");
+
+        foreach (GameObject fuelObject in fuelObjects)
+        {
+
+            fuelObject.SendMessage("ResetCollectables");
+
+        }
+        yield return null;
+    }
 
 
 // LEVEL GIMMICKS
