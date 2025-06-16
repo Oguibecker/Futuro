@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
     [Header("Game Variables")]
     [Space]
     private float GlobalSpeed = 20f;
-    private float forwardSpeed;
+    public float forwardSpeed;
     public float laneDistance = 2f;
     public CharacterController controller;
     public int keyCooldown;
@@ -241,6 +241,17 @@ public class PlayerController : MonoBehaviour
             textBox.text += textToType[i];
             yield return new WaitForSeconds(0.02f);
         }
+    }
+
+    public IEnumerator triggeredCutscene(bool playerEnableCutscene)
+    {
+        if (playerEnableCutscene == true){
+            forwardSpeed = 0.5f;
+            Debug.Log("passed by obstacle. Speed = " + forwardSpeed);
+        } else if (playerEnableCutscene == false){
+            forwardSpeed = GlobalSpeed;
+        }
+        yield return null;
     }
 
     System.Collections.IEnumerator damageSlowDown()
