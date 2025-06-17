@@ -7,6 +7,7 @@ public class Checkpoint : MonoBehaviour
     public int beforeLevel;
     public int speedBooster = 0;
 
+    public GameObject mirrorArches;
 
     public enum Gimmick
     {
@@ -14,6 +15,7 @@ public class Checkpoint : MonoBehaviour
         FirstPerson,
         TurnCam180,
         TopDown,
+        Mirrors,
         Depleted
     }
 
@@ -48,6 +50,9 @@ public class Checkpoint : MonoBehaviour
                     player.camTopDown(true);
                     player.gimmickStateTD = true;
                     Debug.Log("GSTD" + player.gimmickStateTD);
+                } else if (chosenGimmick == Gimmick.Mirrors)
+                {
+                    mirrorArches.transform.localScale = new Vector3(1f,1f,1f);
                 }
 
                 chosenGimmick = Gimmick.Depleted;
