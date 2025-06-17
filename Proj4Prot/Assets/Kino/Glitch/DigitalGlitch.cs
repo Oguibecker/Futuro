@@ -1,25 +1,3 @@
-//
-// KinoGlitch - Video glitch effect
-//
-// Copyright (C) 2015 Keijiro Takahashi
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy of
-// this software and associated documentation files (the "Software"), to deal in
-// the Software without restriction, including without limitation the rights to
-// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-// the Software, and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//
 using UnityEngine;
 
 namespace Kino
@@ -39,16 +17,63 @@ namespace Kino
             set { _intensity = value; }
         }
 
+        [SerializeField]
+        Color _glitchColor = new Color(1, 1, 1, 1);
+
+        public Color glitchColor {
+            get { return _glitchColor; }
+            set { _glitchColor = value; }
+        }
+
         #endregion
 
         #region Private Properties
 
         [SerializeField] Shader _shader;
 
-        Material _material;
+        // Making this internal temporarily for the editor script to access,
+        // or add a public getter for it. For production, consider design.
+        internal Material _material; // Changed from private for editor access
         Texture2D _noiseTexture;
         RenderTexture _trashFrame1;
         RenderTexture _trashFrame2;
+
+        // --- NEW VARIABLES FOR SMOOTH INTENSITY CONTROL ---
+        private float _lerpTargetIntensity;
+        private float _lerpStartTime;
+        private float _currentLerpDuration; // How long this specific transition should take
+        private bool _isLerpingIntensity = false;
+        private float _lerpInitialIntensity; // The intensity value when the lerp started
+        // --- END NEW VARIABLES ---
+
+        #endregion
+
+        #region Public Methods
+
+        // --- NEW PUBLIC METHOD TO TRIGGER THE LERP ---
+        /// <summary>
+        /// Smoothly changes the glitch intensity to a target value over a specified duration.
+        /// </summary>
+        /// <param name="targetIntensity">The desired final intensity (0-1).</param>
+        /// <param name="duration">The time in seconds to reach the target intensity.</param>
+        public void SetIntensitySmoothly(float targetIntensity, float duration = 0.5f) // Default duration of 0.5s
+        {
+            // If we're already at the target intensity, or duration is zero/negative, just set it directly and stop lerping
+            if (Mathf.Approximately(this.intensity, targetIntensity) || duration <= 0)
+            {
+                this.intensity = targetIntensity;
+                _isLerpingIntensity = false;
+                return;
+            }
+
+            // Initialize lerp parameters
+            _lerpInitialIntensity = this.intensity; // Start from the current intensity value
+            _lerpTargetIntensity = targetIntensity;
+            _currentLerpDuration = duration;
+            _lerpStartTime = Time.time; // Record the time when the lerp begins
+            _isLerpingIntensity = true;
+        }
+        // --- END NEW PUBLIC METHOD ---
 
         #endregion
 
@@ -101,6 +126,27 @@ namespace Kino
 
         void Update()
         {
+            // --- HANDLE INTENSITY LERPING ---
+            if (_isLerpingIntensity)
+            {
+                float elapsed = Time.time - _lerpStartTime;
+                float t = elapsed / _currentLerpDuration; // Calculate normalized time (0 to 1)
+
+                // Clamp01 ensures 't' stays between 0 and 1, preventing overshoot and holding the target value
+                this.intensity = Mathf.Lerp(_lerpInitialIntensity, _lerpTargetIntensity, Mathf.Clamp01(t));
+
+                // If the animation is complete (t has reached or exceeded 1.0), stop lerping
+                if (t >= 1.0f)
+                {
+                    _isLerpingIntensity = false; // Stop the lerp
+                }
+            }
+            // --- END INTENSITY LERPING ---
+
+
+            // Original noise update logic. Consider if you want noise to update constantly
+            // or only when intensity is manually set (not lerping).
+            // This example updates noise based on intensity whether it's lerping or not.
             if (Random.value > Mathf.Lerp(0.9f, 0.5f, _intensity))
             {
                 SetUpResources();
@@ -112,7 +158,6 @@ namespace Kino
         {
             SetUpResources();
 
-            // Update trash frames on a constant interval.
             var fcount = Time.frameCount;
             if (fcount % 13 == 0) Graphics.Blit(source, _trashFrame1);
             if (fcount % 73 == 0) Graphics.Blit(source, _trashFrame2);
@@ -122,7 +167,35 @@ namespace Kino
             var trashFrame = Random.value > 0.5f ? _trashFrame1 : _trashFrame2;
             _material.SetTexture("_TrashTex", trashFrame);
 
+            // Debugging line (optional, you can remove it once confident)
+            //Debug.Log($"Sending Glitch Color: {_glitchColor} (R:{_glitchColor.r}, G:{_glitchColor.g}, B:{_glitchColor.b}, A:{_glitchColor.a})");
+            _material.SetColor("_GlitchColor", _glitchColor);
+
             Graphics.Blit(source, destination, _material);
+        }
+
+        void OnDisable()
+        {
+            if (_material != null)
+            {
+                DestroyImmediate(_material);
+                _material = null;
+            }
+            if (_noiseTexture != null)
+            {
+                DestroyImmediate(_noiseTexture);
+                _noiseTexture = null;
+            }
+            if (_trashFrame1 != null)
+            {
+                DestroyImmediate(_trashFrame1);
+                _trashFrame1 = null;
+            }
+            if (_trashFrame2 != null)
+            {
+                DestroyImmediate(_trashFrame2);
+                _trashFrame2 = null;
+            }
         }
 
         #endregion

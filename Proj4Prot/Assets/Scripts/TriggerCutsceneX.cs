@@ -28,7 +28,7 @@ public class TriggerCutsceneX : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            StartCoroutine(showCutscene(true));
+            StartCoroutine(showCutscene(true)); // TURNS ON CUTSCENE ON COLLISION
         }
     }
 
@@ -36,7 +36,7 @@ public class TriggerCutsceneX : MonoBehaviour
     {
         if (showingCutscene && Input.GetKeyDown(KeyCode.Space))
         {
-            StartCoroutine(showCutscene(false));
+            StartCoroutine(showCutscene(false)); // TURNS OFF CUTSCENE ON EXITING
         }
     }
 
@@ -49,7 +49,7 @@ public class TriggerCutsceneX : MonoBehaviour
 
             StartCoroutine(pController.triggeredCutscene(true));
 
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(1.5f);
             Time.timeScale = 0f;
             canvasElement.SetActive(true);
 
@@ -57,7 +57,7 @@ public class TriggerCutsceneX : MonoBehaviour
 
             canvasElement.SetActive(false);
             Time.timeScale = 1f;
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(1.5f);
 
             StartCoroutine(pController.triggeredCutscene(false));
 

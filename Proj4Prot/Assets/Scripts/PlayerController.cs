@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System.Collections;
 using UnityEngine.Rendering.PostProcessing;
 using TMPro;
+using Kino;
 
 public class PlayerController : MonoBehaviour
 {
@@ -47,6 +48,10 @@ public class PlayerController : MonoBehaviour
     private SkyboxRotator skyboxRotator;
     public Vector3 defaultCamOffset;
 
+    public DigitalGlitch glitchEffect;
+    public float transitionDuration = 1.5f;
+    public float glitchDesiredIntensity;
+
     [Header("UI")]
     [Space]
     public Text GasolineText;
@@ -73,8 +78,11 @@ public class PlayerController : MonoBehaviour
     public AudioSource speedSource;
     public AudioSource collectSource;
     public AudioSource heartbeat;
+    public AudioSource corruptSource;
+    public AudioSource mysteryMusicSource;
 
     public Vector2 targetTextLocation;
+
 
     void Start()
     {
@@ -83,7 +91,11 @@ public class PlayerController : MonoBehaviour
         
         cameraRotatorScript = mainCamera.gameObject.GetComponent<CameraFollow>();
 
+        glitchEffect = mainCamera.gameObject.GetComponent<DigitalGlitch>();
+
         deathTextRectTransform = DeathText.GetComponent<RectTransform>();
+
+
 
         PPVolume.profile.TryGetSettings(out damageVignette);
 
@@ -137,8 +149,9 @@ public class PlayerController : MonoBehaviour
             if (fuelAmount < 0){fuelAmount = 0; forwardSpeed = GlobalSpeed;}
         }
 
-            Vector3 targetFuelScale = new Vector3(1f, fuelAmount*3, 1f);
-            fuelBar.transform.localScale = Vector3.Lerp(fuelBar.transform.localScale, targetFuelScale, Time.deltaTime * 6);
+        Vector3 targetFuelScale = new Vector3(1f, fuelAmount*3, 1f);
+        fuelBar.transform.localScale = Vector3.Lerp(fuelBar.transform.localScale, targetFuelScale, Time.deltaTime * 6);
+
 
         // pan audio to current lane
         if (currentLane == 0)
@@ -147,9 +160,6 @@ public class PlayerController : MonoBehaviour
             musicSource.panStereo = 0;
         if (currentLane == 2)
             musicSource.panStereo = 0.2f;
-
-        
-
 
     }
 
@@ -246,10 +256,31 @@ public class PlayerController : MonoBehaviour
     public IEnumerator triggeredCutscene(bool playerEnableCutscene)
     {
         if (playerEnableCutscene == true){
-            forwardSpeed = 0.5f;
-            Debug.Log("passed by obstacle. Speed = " + forwardSpeed);
+
+            glitchEffect.SetIntensitySmoothly(0.7f, transitionDuration);
+            StartCoroutine(playSFX("corrupt"));
+
+            while (forwardSpeed > (GlobalSpeed/3)){
+                forwardSpeed -= 1;
+                yield return new WaitForSeconds(0.1f);
+            }
+            musicSource.volume = 0;
+            mysteryMusicSource.volume = volumeControl;
+
+
         } else if (playerEnableCutscene == false){
+            
+            glitchEffect.SetIntensitySmoothly(0, transitionDuration);
+            StartCoroutine(playSFX("corrupt"));
+
+            while (forwardSpeed < GlobalSpeed){
+                forwardSpeed += 1;
+                yield return new WaitForSeconds(0.1f);
+            }
             forwardSpeed = GlobalSpeed;
+            mysteryMusicSource.volume = 0;
+            musicSource.volume = volumeControl;
+            
         }
         yield return null;
     }
@@ -372,11 +403,11 @@ public class PlayerController : MonoBehaviour
     {
         if (!enableClock)
         {
-            for (int i = 0; i < 2; i++) // Flash twice
+            for (int i = 0; i < 4; i++) // Flash 4
             {
                 TimerText.color = Color.green;
                 yield return new WaitForSeconds(0.3f);
-                TimerText.color = Color.white;
+                TimerText.color = new Color(255f,131f,0);
                 yield return new WaitForSeconds(0.3f);
             }
 
@@ -410,7 +441,7 @@ public class PlayerController : MonoBehaviour
                 }
                 else
                 {
-                    TimerText.color = Color.white;
+                    TimerText.color = new Color(255f,131f,0);
                 }
 
                 TimerText.text = $"{formattedSeconds}:{formattedMilliseconds}";
@@ -427,6 +458,7 @@ public class PlayerController : MonoBehaviour
     System.Collections.IEnumerator playSFX(string type)
     {
         musicSource.volume = volumeControl / 5f;
+        
         if (type == "speed"){
             speedSource.Play();
         } else if (type == "hurt"){
@@ -435,7 +467,10 @@ public class PlayerController : MonoBehaviour
             collectSource.Play();
             collectSource.pitch = (1 + (currentCollectableNumber/10));
             musicSource.volume = volumeControl;
+        }  else if (type == "corrupt"){
+            corruptSource.Play();
         }
+        
         yield return new WaitForSeconds(0.25f);
         musicSource.volume = volumeControl;
     }
@@ -487,7 +522,7 @@ public class PlayerController : MonoBehaviour
     }
 
 
-// LEVEL GIMMICKS
+#region CAMERA GIMMICKS
 
     public void firstPerson(bool FPActive)
     {        
@@ -518,5 +553,7 @@ public class PlayerController : MonoBehaviour
         }
         
     }
+
+#endregion
 
 }
