@@ -15,6 +15,7 @@ public class PlayerController : MonoBehaviour
     public CharacterController controller;
     public int keyCooldown;
     public int passedByCheckpoint = 0;
+    public bool forceMiddleLane;
 
 
     [Header("Current GameState")]
@@ -38,12 +39,12 @@ public class PlayerController : MonoBehaviour
     private IEnumerator settingTimer;
     public bool reversedKeys = false;
     public float fuelAmount = 0f;
+    private bool veerCooldown;
 
     //SKYBOX ROTATION, UI
     [Header("Camera, Skybox Rotation")]
     [Space]
     public Camera mainCamera;
-    private CameraFollow cameraRotatorScript;
     public GameObject skybox;
     private SkyboxRotator skyboxRotator;
     public Vector3 defaultCamOffset;
@@ -54,8 +55,6 @@ public class PlayerController : MonoBehaviour
 
     [Header("UI")]
     [Space]
-    public Text GasolineText;
-    public Text BoosterText;
     public Text TimerText;
     public PostProcessVolume PPVolume;
     private Vignette damageVignette;
@@ -65,8 +64,11 @@ public class PlayerController : MonoBehaviour
     public GameObject fuelBar;
     public GameObject fuelBarDisabled;
 
-    public GameObject DeathText;
-    private RectTransform deathTextRectTransform;
+    public GameObject DeathTextTimer;
+    public GameObject DeathTextObstacle;
+
+    public GameObject cameraUI;
+    private CutsceneManager cutsceneManager;
 
 
     // SOUND AND MUSIC
@@ -81,31 +83,21 @@ public class PlayerController : MonoBehaviour
     public AudioSource corruptSource;
     public AudioSource mysteryMusicSource;
 
-    public Vector2 targetTextLocation;
-
 
     void Start()
     {
-        if (controller == null)
-            controller = GetComponent<CharacterController>();
-        
-        cameraRotatorScript = mainCamera.gameObject.GetComponent<CameraFollow>();
-
+        // GET COMPONENTS
+        controller = GetComponent<CharacterController>();
         glitchEffect = mainCamera.gameObject.GetComponent<DigitalGlitch>();
-
-        deathTextRectTransform = DeathText.GetComponent<RectTransform>();
-
-
-
         PPVolume.profile.TryGetSettings(out damageVignette);
+        skyboxRotator = skybox.GetComponent<SkyboxRotator>();
+        cutsceneManager = cameraUI.GetComponent<CutsceneManager>();
 
+        // SET VARIABLES
         forwardSpeed = GlobalSpeed;
-
         currentLives = maxLives;
         musicSource.volume = volumeControl;
         lastCheckpoint = transform.position;
-        skyboxRotator = skybox.GetComponent<SkyboxRotator>();
-        targetTextLocation = new Vector2(0f, 950f);
         
     }
 
@@ -161,33 +153,18 @@ public class PlayerController : MonoBehaviour
         if (currentLane == 2)
             musicSource.panStereo = 0.2f;
 
+        if (currentLane != 1 && forceMiddleLane && !veerCooldown)
+        {
+            StartCoroutine(veerMiddle());
+        }
     }
 
-    private IEnumerator OnControllerColliderHit(ControllerColliderHit hit)
+    public IEnumerator veerMiddle()
     {
-        if (hit.gameObject.CompareTag("Obstacle"))
-        {   
-            isHurt = true;
-            fuelBarDisabled.transform.localScale = new Vector3(1f,9f,1f);
-            currentLives--;
-            if (currentLives <= 0)
-            {
-                StartCoroutine(Respawn());  
-            }
-            heartbeat.Play();
-            StartCoroutine(playSFX("hurt"));
-            //StartCoroutine(damageSlowDown());
-            damageVignette.active = true;
-
-            Collider playerCollider = hit.collider;
-            if (playerCollider != null){StartCoroutine(TemporarilyDisableCollider(playerCollider));}
-
-            yield return new WaitForSeconds(1.5f);
-            fuelBarDisabled.transform.localScale = new Vector3(1f,0f,1f);
-            isHurt = false;
-
-
-        }
+        veerCooldown = true;
+        yield return new WaitForSeconds(0.5f);
+        currentLane = 1;
+        veerCooldown = false;
     }
 
 
@@ -195,62 +172,6 @@ public class PlayerController : MonoBehaviour
     {        
         StartCoroutine(playSFX("collect"));
         if (fuelAmount < 2.5) {fuelAmount += 1f;}
-        //StartCoroutine(updateFuelGauge(1));
-    }
-
-    /*public IEnumerator updateFuelGauge(int gaugeMode)
-    {
-        previousCollectableNumber = currentCollectableNumber;
-        if (gaugeMode == 1) // ON MODE 1 - INCREMENT THE ARROW ONE STEP
-        {
-            currentCollectableNumber += 1;
-        }
-        else if (gaugeMode == 0) // ON MODE 0 - DECREMENT THE ARROW ALL THE WAY
-        {
-            currentCollectableNumber = 0;
-        }
-
-        if (currentFuelGaugeCoroutine != null)
-        {
-            StopCoroutine(currentFuelGaugeCoroutine);
-        }
-
-        currentFuelGaugeAngle = Mathf.Clamp((currentCollectableNumber * -30f) + 90f, -85f, 85f);
-        currentFuelGaugeCoroutine = StartCoroutine(SmoothlyRotateArrow(currentFuelGaugeAngle,gaugeMode));
-        // ROTATE THE ARROW SMOOTHLY TO THE DESIRED ANGLE
-        // IF MODE IS 1, ARROW GOES FAST. IF MODE IS 0, ARROW TAKES TIME EQUAL TO THE NUMBER OF FUEL.
-        yield return currentFuelGaugeCoroutine;
-    }
-
-    private IEnumerator SmoothlyRotateArrow(float targetZAngle, int smoothMode)
-    {
-        float startZAngle = fuelGaugeArrow.transform.localEulerAngles.z;
-        float elapsedTime = 0f;
-        float smoothRotationTime = 0f;
-        if (smoothMode == 1){smoothRotationTime = 0.2f;}
-        else if (smoothMode == 0) {smoothRotationTime = previousCollectableNumber;}
-
-        while (elapsedTime < smoothRotationTime)
-        {
-            elapsedTime += Time.deltaTime;
-            float t = elapsedTime / smoothRotationTime;
-            float interpolatedZAngle = Mathf.LerpAngle(startZAngle, targetZAngle, t);
-            fuelGaugeArrow.transform.localEulerAngles = new Vector3(0f, 0f, interpolatedZAngle);
-            yield return null;
-        }
-
-        fuelGaugeArrow.transform.localEulerAngles = new Vector3(0f, 0f, targetZAngle);
-    }*/
-
-    public IEnumerator WriteText(string textToType, Text textBox)
-    {
-        textBox.text = "";
-
-        for (int i = 0; i < textToType.Length; i++)
-        {
-            textBox.text += textToType[i];
-            yield return new WaitForSeconds(0.02f);
-        }
     }
 
     public IEnumerator triggeredCutscene(bool playerEnableCutscene)
@@ -288,92 +209,26 @@ public class PlayerController : MonoBehaviour
     System.Collections.IEnumerator damageSlowDown()
     {
         forwardSpeed = GlobalSpeed;
-        forwardSpeed = forwardSpeed * 0.5f;
-
-        keyCooldown = 1;
-        BoosterText.color = Color.red;
-        BoosterText.text = "-/-/-";
+        forwardSpeed = forwardSpeed * 0.25f;
 
         yield return new WaitForSeconds(1.5f);
 
         forwardSpeed = GlobalSpeed;
-
-        keyCooldown = 0;
-        BoosterText.color = Color.white;
-        BoosterText.text = "Boosters Ready";
     }
 
-    /*
-    System.Collections.IEnumerator KeySpeedBoost()
-    {
-        float previousSkyboxRotation = skyboxRotator.rotationSpeedY;
-        float fovTimer = 0f;
-        float fovFXduration = 0.5f;
-
-        forwardSpeed = GlobalSpeed;
-        forwardSpeed = forwardSpeed * 1.5f;
-
-        skyboxRotator.rotationSpeedY = skyboxRotator.rotationSpeedY * 10f;
-
-        while (fovTimer < fovFXduration)
-        {
-            fovTimer += Time.deltaTime;
-            mainCamera.fieldOfView = Mathf.Lerp(120, 140, fovTimer / fovFXduration);
-            yield return null;
-        }
-
-        yield return new WaitForSeconds(previousCollectableNumber);
-
-
-        fovTimer = 0f;
-        while (fovTimer < fovFXduration)
-        {
-            fovTimer += Time.deltaTime;
-            mainCamera.fieldOfView = Mathf.Lerp(140, 120, fovTimer / fovFXduration);
-            yield return null;
-        }
-
-        forwardSpeed = GlobalSpeed;
-        skyboxRotator.rotationSpeedY = previousSkyboxRotation;
-    }
-
-    System.Collections.IEnumerator SpaceKeyCooldown()
-    {
-        string DashBack = "Boosters Engaged";
-        BoosterText.color = Color.blue;
-        StartCoroutine(WriteText(DashBack,BoosterText));
-
-        keyCooldown = 1;
-        StartCoroutine(playSFX("speed"));
-        //StartCoroutine(updateFuelGauge(0));
-
-        yield return new WaitForSeconds(previousCollectableNumber);
-
-        if (passedByCheckpoint == 1){keyCooldown = 0; yield break;}
-
-        //StartCoroutine(playSFX("collect"));
-        keyCooldown = 0;
-
-        DashBack = "Boosters Ready";
-        BoosterText.color = Color.white;
-        StartCoroutine(WriteText(DashBack,BoosterText));
-    }*/
 
     public System.Collections.IEnumerator passedCheckpoint(int beforeLevel)
     {
         if (beforeLevel == 1 && isRespawning == false)
         { //checkpoint is before level
             passedByCheckpoint = 0;
-            string DashBack = "Boosters Ready";
-            BoosterText.color = Color.white;
-            StartCoroutine(WriteText(DashBack,BoosterText));
             
             GlobalSpeed = 30f;
             forwardSpeed = GlobalSpeed;
 
             settingTimer = SetTimer(9f,true);
             StartCoroutine(settingTimer);
-            StartCoroutine(playSFX("speed"));
+            //StartCoroutine(playSFX("speed"));
 
         } else if (beforeLevel == 1 && isRespawning == true)
         {
@@ -381,10 +236,8 @@ public class PlayerController : MonoBehaviour
             StartCoroutine(settingTimer);
 
         } else if (beforeLevel == 0){ //checkpoint is before text
+            
             passedByCheckpoint = 1;
-            string DashBack = "Boosters Offline";
-            BoosterText.color = Color.gray;
-            StartCoroutine(WriteText(DashBack,BoosterText));
             currentLives = maxLives;
             damageVignette.active = false;
             heartbeat.Stop();
@@ -450,7 +303,7 @@ public class PlayerController : MonoBehaviour
             }
 
             TimerText.text = "00:00";
-            StartCoroutine(Respawn());
+            StartCoroutine(Respawn(true));
 
         }
     }
@@ -475,81 +328,126 @@ public class PlayerController : MonoBehaviour
         musicSource.volume = volumeControl;
     }
 
-    System.Collections.IEnumerator TemporarilyDisableCollider(Collider col)
+    
+
+
+
+#region DAMAGE & DEATH
+
+    public void takeDamage()
     {
-        col.enabled = false;
-        yield return new WaitForSeconds(3f);
-        col.enabled = true;
+        if (!isHurt){StartCoroutine(tookDamage());}
     }
 
-    System.Collections.IEnumerator Respawn()
+    public IEnumerator tookDamage()
     {
-        deathTextRectTransform.anchoredPosition = new Vector2(0f, 0f);
-        isRespawning = true;  
+        isHurt = true;
+        fuelBarDisabled.SetActive(true);
+
+        currentLives--;
+        if (currentLives <= 0)
+        {
+            StartCoroutine(Respawn(false));  
+        }
+
+        heartbeat.Play();
+        StartCoroutine(playSFX("hurt"));
+        StartCoroutine(damageSlowDown());
+        damageVignette.active = true;
+
+        yield return new WaitForSeconds(1.5f);
+
+        fuelBarDisabled.SetActive(false);
+        isHurt = false;
+    }
+
+
+    private IEnumerator Respawn(bool deathType) // TRUE FOR TIMER. FALSE FOR OBSTACLE
+    {
+        isRespawning = true;
+        cutsceneManager.glitchState = true;
+
+        if (deathType){DeathTextTimer.SetActive(true);}
+        if (!deathType){DeathTextObstacle.SetActive(true);}
+
         musicSource.pitch = -1f;
+
         StopCoroutine(settingTimer);
         StartCoroutine(resetFuel());
-
-        yield return new WaitForSeconds(0.5f);
 
         transform.position = lastCheckpoint;
         currentLane = 1;
         currentLives = maxLives;
+
+        yield return new WaitForSeconds(1f);
+
         damageVignette.active = false;
         heartbeat.Stop();
-
-        yield return new WaitForSeconds(0.2f); 
         musicSource.pitch = 1f;
+
+        DeathTextObstacle.SetActive(false);
+        DeathTextTimer.SetActive(false);
+        cutsceneManager.glitchState = false;
+        
         isRespawning = false;
-
-        deathTextRectTransform.anchoredPosition = new Vector2(0f, 1500f);
-
-        //deathString = "";
-        //StartCoroutine(WriteText(deathString,DeathText));
     }
-
-    System.Collections.IEnumerator resetFuel()
+    
+    private IEnumerator resetFuel()
     {
         GameObject[] fuelObjects = GameObject.FindGameObjectsWithTag("Fuel");
-
         foreach (GameObject fuelObject in fuelObjects)
         {
-
             fuelObject.SendMessage("ResetCollectables");
-
         }
         yield return null;
     }
 
+#endregion
+
 
 #region CAMERA GIMMICKS
 
-    public void firstPerson(bool FPActive)
+    public void firstPerson()
     {        
-        //cameraRotatorScript.SmoothRotateCamera(30f,1); new Vector3(0,1.5f,-3f);
-        if (FPActive == false)  {cameraRotatorScript.offset = defaultCamOffset;}
-        if (FPActive == true)   {cameraRotatorScript.offset = new Vector3(0,1f,0);}
+        StartCoroutine(moveCameraToFirstPerson());
+        //if (FPActive == false)  {cameraRotatorScript.offset = defaultCamOffset;}
+        //if (FPActive == true)   {cameraRotatorScript.offset = new Vector3(0,1f,0);}
+    }
+
+    public IEnumerator moveCameraToFirstPerson()
+    {
+        mainCamera.transform.localEulerAngles = new Vector3(0,0,0);
+        float timeElapsed = 0f;
+        while (timeElapsed < 1)
+        {
+            float t = timeElapsed / 1;
+            mainCamera.transform.localPosition = Vector3.Lerp(mainCamera.transform.localPosition,new Vector3(0,0,-0.45f),t);
+            timeElapsed += Time.deltaTime;
+            yield return null;
+        }
+        Camera.main.transform.localPosition = new Vector3(0,0,-0.45f);
+
     }
 
     public void camTurn180(bool C180Active)
     {        
-        cameraRotatorScript.SmoothRotateCamera(180f,3);
-        reversedKeys = !reversedKeys;
-        if (C180Active == false)  {cameraRotatorScript.offset = defaultCamOffset;}
-        else if (C180Active == true)   {cameraRotatorScript.offset = new Vector3(0,5f,-3f);}
+        //cameraRotatorScript.SmoothRotateCamera(180f,3);
+        if(C180Active){mainCamera.transform.localEulerAngles = new Vector3(15f,0,180f); reversedKeys = true;}
+        if(!C180Active){mainCamera.transform.localEulerAngles = new Vector3(15f,0,0f); reversedKeys = false;}
+        
     }
 
     public void camTopDown(bool TDActive)
     {        
         if (TDActive == false)
         {
-            cameraRotatorScript.SmoothRotateCamera(-45f,1);
-            cameraRotatorScript.offset = defaultCamOffset;
+            mainCamera.transform.localPosition = new Vector3(0,2f,-5.5f);
+            mainCamera.transform.localEulerAngles = new Vector3(15f,0,0);
         }
         if (TDActive == true)
         {
-            cameraRotatorScript.SmoothRotateCamera(45f,1);
-            cameraRotatorScript.offset = new Vector3(0,20f,0f);
+            mainCamera.transform.localPosition = new Vector3(0,15f,-2f);
+            mainCamera.transform.localEulerAngles = new Vector3(60f,0,0);
         }
         
     }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement; // Required for scene management functions
+using System.Collections;
 
 public class SceneChangerTrigger : MonoBehaviour
 {
@@ -18,8 +19,14 @@ public class SceneChangerTrigger : MonoBehaviour
         {
             if (!string.IsNullOrEmpty(targetSceneName))
             {
-                SceneManager.LoadScene(targetSceneName);
+                StartCoroutine(goToMainMenu());
             }
         }
+    }
+
+    private IEnumerator goToMainMenu()
+    {
+        yield return new WaitForSeconds(9.5f);
+        SceneManager.LoadScene(targetSceneName);
     }
 }

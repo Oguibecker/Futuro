@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 235743267579805500}
   - component: {fileID: 5173734335418453114}
   - component: {fileID: -6376593821474973961}
+  - component: {fileID: 5658964800719386449}
   m_Layer: 0
   m_Name: Obstacle
   m_TagString: Obstacle
@@ -101,7 +102,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -120,6 +121,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxRotationSpeed: 180
+--- !u!114 &5658964800719386449
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 969598002377981195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed05e4c2382f8bb45aa6a6fb15bba437, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &5639750763302591644
 PrefabInstance:
   m_ObjectHideFlags: 0

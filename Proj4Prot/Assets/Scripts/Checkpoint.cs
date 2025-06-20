@@ -39,20 +39,20 @@ public class Checkpoint : MonoBehaviour
                 
                 if (chosenGimmick == Gimmick.None)
                 {
-                    player.firstPerson(false);
                     if (player.gimmickStateTD == true) {player.camTopDown(false); player.gimmickStateTD = false;}
                     if (player.gimmickState180 == true) {player.camTurn180(false); player.gimmickState180 = false;}
+                    player.reversedKeys = false;
                 }
-                else if (chosenGimmick == Gimmick.FirstPerson)  {player.firstPerson(true);}
+                else if (chosenGimmick == Gimmick.FirstPerson)  {player.firstPerson();}
                 else if (chosenGimmick == Gimmick.TurnCam180)   {player.camTurn180(true); player.gimmickState180 = true;}
                 else if (chosenGimmick == Gimmick.TopDown)
                 {
                     player.camTopDown(true);
                     player.gimmickStateTD = true;
-                    Debug.Log("GSTD" + player.gimmickStateTD);
                 } else if (chosenGimmick == Gimmick.Mirrors)
                 {
                     mirrorArches.transform.localScale = new Vector3(1f,1f,1f);
+                    player.reversedKeys = true;
                 }
 
                 chosenGimmick = Gimmick.Depleted;
