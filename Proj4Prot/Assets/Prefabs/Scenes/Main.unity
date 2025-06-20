@@ -9117,7 +9117,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0.78431374}
+  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -14767,7 +14767,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0.78431374}
+  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -23423,7 +23423,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0.78431374}
+  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -23792,9 +23792,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '...no machine should
+  m_text: '...machine taking
 
-    take more from man...'
+    more from man...'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6f09d2af1f453e04c8356c88b36f746c, type: 2}
   m_sharedMaterial: {fileID: 2152127574866454049, guid: 6f09d2af1f453e04c8356c88b36f746c, type: 2}
@@ -30630,7 +30630,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0.78431374}
+  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -33662,7 +33662,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0.78431374}
+  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0.39215687}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -38769,7 +38769,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0.78431374}
+  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -41431,7 +41431,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0.78431374}
+  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -41580,9 +41580,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '"...no, this is
-
-    not paranoia...'
+  m_text: "\"No amount of \n'progress' justifies..."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6f09d2af1f453e04c8356c88b36f746c, type: 2}
   m_sharedMaterial: {fileID: 2152127574866454049, guid: 6f09d2af1f453e04c8356c88b36f746c, type: 2}
@@ -43251,7 +43249,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0.78431374}
+  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -53915,9 +53913,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '"I keep on <color="red">rewinding</color>
+  m_text: '"My mind keeps
 
-    mentally to that day...'
+    <color="red">rewinding</color> to that day...'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6f09d2af1f453e04c8356c88b36f746c, type: 2}
   m_sharedMaterial: {fileID: 2152127574866454049, guid: 6f09d2af1f453e04c8356c88b36f746c, type: 2}
@@ -58786,7 +58784,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0.78431374}
+  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -63284,7 +63282,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0.78431374}
+  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -68756,7 +68754,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0.78431374}
+  m_Color: {r: 0.05660379, g: 0.034830682, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -69867,7 +69865,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: '...than what it
 
-    can ever give."'
+    could ever give."'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6f09d2af1f453e04c8356c88b36f746c, type: 2}
   m_sharedMaterial: {fileID: 2152127574866454049, guid: 6f09d2af1f453e04c8356c88b36f746c, type: 2}

@@ -26,23 +26,29 @@ public class TriggerCutsceneNEW : MonoBehaviour
     public bool enableEndgameControls = false;
     public bool goFirstPerson = false;
     public bool turnOffMusic = false;
+    private Coroutine showingCutscene;
 
     void Awake()
     {
         cutsceneManager = cameraUI.GetComponent<CutsceneManager>();
         pController = player.GetComponent<PlayerController>();
         cameraRotator = cameraPivot.GetComponent<SimpleRotateObject>();
+
     }
 
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            StartCoroutine(showCutscene()); // TURNS ON CUTSCENE ON COLLISION
+            if (showingCutscene != null) // Check if a coroutine is already running
+            {
+                StopCoroutine(showingCutscene);
+            }
+            showingCutscene = StartCoroutine(showCutscene());
         }
     }
 
-    System.Collections.IEnumerator showCutscene()
+    private IEnumerator showCutscene()
     {
         //turn all FX on
         cutsceneManager.glitchState = true;
