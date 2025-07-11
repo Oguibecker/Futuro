@@ -20,9 +20,9 @@ O desafio está em equilibrar velocidade, controle e recursos limitados.
 - Física e gráficos 3D
 - Interface e HUD desenvolvidos com sistema de UI do Unity
 
-## 👨‍💻 Contribuições de Guilherme Becker
+## 👨‍💻 Minhas Contribuições 
 
-Guilherme Becker foi responsável por boa parte da lógica e programação central do jogo, incluindo:
+Fui responsável por boa parte da lógica e programação central do jogo, incluindo:
 
 - Implementação do *sistema de checkpoints*
 - Criação do *sistema de vida*
